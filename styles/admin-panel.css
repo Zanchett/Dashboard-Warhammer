@@ -1,0 +1,98 @@
+.admin-panel {
+  color: #1aff8c;
+  font-family: 'Share Tech Mono', monospace;
+  background-color: var(--color-bg);
+  min-height: 100vh;
+  padding: 1rem;
+  position: relative;
+}
+
+.admin-panel::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    linear-gradient(rgba(20, 240, 116, 0.03), rgba(20, 240, 116, 0.03) 1px, transparent 1px, transparent 2px),
+    linear-gradient(90deg, rgba(20, 240, 116, 0.02), rgba(20, 240, 116, 0.02) 1px, transparent 1px, transparent 2px);
+  background-size: 100% 2px, 2px 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.admin-panel::after {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at center, transparent 60%, rgba(0, 0, 0, 0.4) 100%);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.admin-panel > * {
+  position: relative;
+  z-index: 3;
+}
+
+.admin-panel h1, .admin-panel h2, .admin-panel h3 {
+  color: #1aff8c;
+  text-shadow: 0 0 5px rgba(26, 255, 140, 0.5);
+}
+
+.admin-panel .card {
+  background-color: rgba(0, 20, 0, 0.95);
+  border: 1px solid rgba(26, 255, 140, 0.3);
+  box-shadow: 0 0 10px rgba(26, 255, 140, 0.1);
+}
+
+.admin-panel .button {
+  background-color: rgba(26, 255, 140, 0.1);
+  border: 1px solid #1aff8c;
+  color: #1aff8c;
+  transition: all 0.3s ease;
+}
+
+.admin-panel .button:hover {
+  background-color: rgba(26, 255, 140, 0.2);
+  box-shadow: 0 0 10px rgba(26, 255, 140, 0.5);
+}
+
+.admin-panel input {
+  background-color: rgba(0, 0, 0, 0.5);
+  border: 1px solid #1aff8c;
+  color: #1aff8c;
+}
+
+.admin-panel input:focus {
+  box-shadow: 0 0 5px rgba(26, 255, 140, 0.5);
+}
+
+.admin-panel .tabs {
+  border-bottom-color: rgba(26, 255, 140, 0.3);
+}
+
+.admin-panel .tab {
+  color: #1aff8c;
+}
+
+.admin-panel .tab[data-state="active"] {
+  border-bottom-color: #1aff8c;
+  box-shadow: 0 0 5px rgba(26, 255, 140, 0.5);
+}
+
+/* CRT effect */
+@keyframes flicker {
+  0% { opacity: 0.99; }
+  50% { opacity: 1; }
+  100% { opacity: 0.99; }
+}
+
+.admin-panel {
+  animation: flicker 0.15s infinite;
+}
+

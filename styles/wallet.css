@@ -1,0 +1,114 @@
+.wallet-container {
+  padding: 1rem;
+  background-color: rgba(0, 20, 0, 0.95);
+  border: 1px solid rgba(26, 255, 140, 0.3);
+  color: #1aff8c;
+  font-family: 'Share Tech Mono', monospace;
+}
+
+.wallet-title {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  text-align: center;
+  text-shadow: 0 0 5px rgba(26, 255, 140, 0.5);
+}
+
+.wallet-balance {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  background-color: rgba(26, 255, 140, 0.1);
+  border: 1px solid rgba(26, 255, 140, 0.3);
+}
+
+.balance-amount {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.wallet-send {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.wallet-input {
+  background-color: rgba(0, 0, 0, 0.5);
+  border: 1px solid #1aff8c;
+  color: #1aff8c;
+  height: 3rem;
+  padding: 0 1rem;
+  font-size: 1rem;
+  border-radius: 0;
+  transition: all 0.3s ease;
+}
+
+.wallet-input:focus {
+  background-color: rgba(26, 255, 140, 0.1);
+  box-shadow: 0 0 5px rgba(26, 255, 140, 0.3);
+  outline: none;
+}
+
+.wallet-input::placeholder {
+  color: rgba(20, 240, 116, 0.5);
+}
+
+.wallet-button {
+  background-color: rgba(0, 0, 0, 0.5);
+  border: 1px solid #1aff8c;
+  color: #1aff8c;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-radius: 0;
+  text-shadow: 0 0 5px rgba(20, 240, 116, 0.5);
+}
+
+.wallet-button:hover:not(:disabled) {
+  background-color: rgba(26, 255, 140, 0.2);
+  box-shadow: 0 0 15px rgba(26, 255, 140, 0.5);
+}
+
+.wallet-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.wallet-transactions {
+  border-top: 1px solid rgba(26, 255, 140, 0.3);
+  padding-top: 1rem;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.transaction-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem;
+  border-bottom: 1px solid rgba(26, 255, 140, 0.2);
+}
+
+.transaction-item:last-child {
+  border-bottom: none;
+}
+
+.transaction-item span:nth-child(2) {
+  font-weight: bold;
+}
+
+.wallet-loading {
+  text-align: center;
+  padding: 2rem;
+  color: #1aff8c;
+}
+
+.no-transactions {
+  text-align: center;
+  padding: 1rem;
+  color: rgba(26, 255, 140, 0.7);
+}
+

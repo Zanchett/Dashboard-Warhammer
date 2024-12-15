@@ -1,0 +1,47 @@
+.mechanicus-upgrades {
+  font-family: 'Share Tech Mono', monospace;
+}
+
+.mechanicus-upgrades h2 {
+  text-shadow: 0 0 10px rgba(26, 255, 140, 0.5);
+}
+
+.mechanicus-upgrades .bg-secondary {
+  background-color: rgba(20, 240, 116, 0.1);
+  border: 1px solid rgba(26, 255, 140, 0.3);
+}
+
+.mechanicus-upgrades .text-primary {
+  color: #1aff8c;
+}
+
+.mechanicus-upgrades .text-secondary {
+  color: #14f074;
+}
+
+.mechanicus-upgrades button {
+  background-color: rgba(26, 255, 140, 0.2);
+  border: 1px solid #1aff8c;
+  color: #1aff8c;
+  transition: all 0.3s ease;
+}
+
+.mechanicus-upgrades button:hover:not(:disabled) {
+  background-color: rgba(26, 255, 140, 0.3);
+  box-shadow: 0 0 10px rgba(26, 255, 140, 0.5);
+}
+
+.mechanicus-upgrades button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.mechanicus-upgrades .progress {
+  background-color: rgba(26, 255, 140, 0.1);
+  border: 1px solid #1aff8c;
+}
+
+.mechanicus-upgrades .progress div {
+  background-color: #1aff8c;
+}
+

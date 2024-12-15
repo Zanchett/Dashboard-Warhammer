@@ -1,0 +1,66 @@
+.servitor-assistant {
+  background-image: url('/cogitator-background.jpg');
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+.servitor-assistant::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 1;
+}
+
+.servitor-assistant > * {
+  position: relative;
+  z-index: 2;
+}
+
+.servitor-assistant h2 {
+  font-family: 'Cinzel', serif;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.servitor-assistant .animate-spin {
+  animation: spin 4s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.servitor-assistant .bg-secondary {
+  background-color: rgba(20, 240, 116, 0.2);
+  border: 1px solid #14f074;
+}
+
+.servitor-assistant .text-secondary-foreground {
+  color: #14f074;
+}
+
+.servitor-assistant input,
+.servitor-assistant button {
+  background-color: rgba(20, 240, 116, 0.1);
+  border: 1px solid #14f074;
+  color: #14f074;
+}
+
+.servitor-assistant input::placeholder {
+  color: rgba(20, 240, 116, 0.5);
+}
+
+.servitor-assistant button:hover {
+  background-color: rgba(20, 240, 116, 0.3);
+}
+

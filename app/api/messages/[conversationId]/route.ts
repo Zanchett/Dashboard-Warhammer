@@ -1,47 +1,62 @@
 import { NextResponse } from "next/server"
+import { Redis } from "@upstash/redis"
 
-// In-memory storage for conversation messages in development
-const memoryConversationMessages: { [key: string]: any[] } = {}
+// Initialize Redis client
+let redis: Redis | null = null
+let isRedisAvailable = false
+let storageType: "redis" | "memory" = "memory"
+
+// In-memory storage for development/fallback
+const inMemoryMessages: any[] = [] // Store messages in memory
+
+function initializeRedis() {
+  if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
+    try {
+      redis = new Redis({
+        url: process.env.KV_REST_API_URL,
+        token: process.env.KV_REST_API_TOKEN,
+      })
+      isRedisAvailable = true
+      storageType = "redis"
+      console.log("[Redis] Messages by Conversation Redis client initialized successfully.")
+    } catch (error) {
+      console.error("[Redis] Failed to initialize Messages by Conversation Redis client:", error)
+      isRedisAvailable = false
+      storageType = "memory"
+    }
+  } else {
+    console.warn(
+      "[Redis] KV_REST_API_URL or KV_REST_API_TOKEN not set for messages by conversation. Using in-memory storage.",
+    )
+    isRedisAvailable = false
+    storageType = "memory"
+  }
+}
+
+initializeRedis()
+
+async function getMessagesFromStore(): Promise<any[]> {
+  if (storageType === "memory") {
+    return inMemoryMessages
+  }
+  if (!redis) return []
+  try {
+    const messagesJson = await redis.get<string>("messages")
+    return messagesJson ? JSON.parse(messagesJson) : []
+  } catch (error) {
+    console.error("Error reading messages from Redis:", error)
+    return []
+  }
+}
 
 export async function GET(request: Request, { params }: { params: { conversationId: string } }) {
   try {
     const { conversationId } = params
-    const messages = memoryConversationMessages[conversationId] || []
-    console.log(`[Conversation Messages API] Fetching ${messages.length} messages for conversation:`, conversationId)
-    return NextResponse.json(messages)
+    const allMessages = await getMessagesFromStore()
+    const conversationMessages = allMessages.filter((msg) => msg.conversationId === conversationId)
+    return NextResponse.json(conversationMessages)
   } catch (error) {
-    console.error("Error fetching conversation messages:", error)
-    return NextResponse.json({ error: "Failed to fetch messages" }, { status: 500 })
-  }
-}
-
-export async function POST(request: Request, { params }: { params: { conversationId: string } }) {
-  try {
-    const { conversationId } = params
-    const { message, username } = await request.json()
-
-    if (!message || !username) {
-      return NextResponse.json({ error: "Message and username are required" }, { status: 400 })
-    }
-
-    if (!memoryConversationMessages[conversationId]) {
-      memoryConversationMessages[conversationId] = []
-    }
-
-    const newMessage = {
-      id: Date.now().toString(),
-      message,
-      username,
-      timestamp: new Date().toISOString(),
-      conversationId,
-    }
-
-    memoryConversationMessages[conversationId].push(newMessage)
-    console.log("[Conversation Messages API] Message added to memory storage:", newMessage.id)
-
-    return NextResponse.json(newMessage)
-  } catch (error) {
-    console.error("Error saving conversation message:", error)
-    return NextResponse.json({ error: "Failed to save message" }, { status: 500 })
+    console.error("Error in GET /api/messages/[conversationId]:", error)
+    return NextResponse.json({ message: "Failed to fetch messages for conversation" }, { status: 500 })
   }
 }

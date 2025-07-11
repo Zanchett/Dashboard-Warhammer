@@ -12,6 +12,104 @@
   --base-hue: 140;
 }
 
+.dashboard-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #0a0a0a; /* Dark background */
+  color: #00ff00; /* Neon green text */
+  font-family: "Share Tech Mono", monospace;
+  text-shadow: 0 0 5px #00ff00;
+  overflow: hidden; /* Prevent scrollbars from content overflow */
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  background-color: #1a1a1a;
+  border-bottom: 2px solid #00ff00;
+  box-shadow: 0 0 10px #00ff00;
+  position: relative;
+  z-index: 10;
+}
+
+.dashboard-title {
+  font-size: 1.8em;
+  color: #00ff00;
+  text-shadow: 0 0 8px #00ff00;
+}
+
+.dashboard-nav {
+  display: flex;
+  gap: 15px;
+}
+
+.dashboard-nav-button {
+  background-color: #00ff00;
+  color: #0a0a0a;
+  padding: 8px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9em;
+  font-weight: bold;
+  text-transform: uppercase;
+  box-shadow: 0 0 8px #00ff00;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.dashboard-nav-button:hover {
+  background-color: #00cc00;
+  box-shadow: 0 0 15px #00ff00;
+}
+
+.dashboard-main {
+  flex-grow: 1;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  position: relative;
+  z-index: 1;
+}
+
+.dashboard-section {
+  background-color: #1a1a1a;
+  border: 1px solid #00ff00;
+  box-shadow: 0 0 10px #00ff00;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.dashboard-section-title {
+  font-size: 1.5em;
+  color: #00ff00;
+  margin-bottom: 15px;
+  text-shadow: 0 0 7px #00ff00;
+  border-bottom: 1px dashed #00ff00;
+  padding-bottom: 5px;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.dashboard-footer {
+  padding: 15px 20px;
+  background-color: #1a1a1a;
+  border-top: 2px solid #00ff00;
+  box-shadow: 0 0 10px #00ff00;
+  text-align: center;
+  font-size: 0.8em;
+  color: #00ff00;
+  position: relative;
+  z-index: 10;
+}
+
 .app-skeleton {
   display: grid;
   grid-template-columns: 280px 1fr 300px;
@@ -92,7 +190,7 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
-  padding-bottom: 0.5rem;
+  padding: 0.5rem;
   border-bottom: 1px solid var(--border-color);
   background-color: hsla(var(--base-hue), 100%, 50%, 0.1); /* Updated background color */
   padding: 0.5rem;
@@ -115,7 +213,8 @@
   transition: all 0.3s ease;
 }
 
-.terminal-tab:hover, .terminal-tab.active {
+.terminal-tab:hover,
+.terminal-tab.active {
   background-color: hsla(var(--base-hue), 100%, 50%, 0.2);
   box-shadow: 0 0 10px var(--color-glow);
 }
@@ -136,7 +235,7 @@
   line-height: 1.5; /* Updated line height */
   white-space: pre;
   cursor: default;
-  font-family: 'Share Tech Mono', monospace; /* Updated font family */
+  font-family: "Share Tech Mono", monospace; /* Updated font family */
   margin-bottom: 1rem; /* Added margin-bottom */
   padding: 1rem; /* Added padding */
   border: 1px solid #1aff8c; /* Added border */
@@ -342,84 +441,14 @@
   height: 100%;
   background-color: #001100; /* Updated background color */
   color: #1aff8c; /* Updated text color */
-  font-family: 'Share Tech Mono', monospace;
+  font-family: "Share Tech Mono", monospace;
   overflow: hidden;
   padding: 1rem; /* Added padding */
   border: 1px solid #1aff8c; /* Added border */
 }
 
-.terminal-header {
-  background-color: hsla(var(--base-hue), 100%, 50%, 0.1);
-  padding: 0.5rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid var(--border-color);
-  border: 1px solid #1aff8c; /* Updated border */
-  margin-bottom: 1rem; /* Added margin-bottom */
-}
-
 .attempts-display {
   font-size: 0.9rem;
-}
-
-.terminal-content {
-  flex: 1;
-  overflow-y: auto;
-  padding: 1rem;
-  font-size: 0.9rem;
-  line-height: 1.4;
-  white-space: pre;
-  cursor: default;
-  font-family: 'Share Tech Mono', monospace; /* Updated font family */
-  line-height: 1.5; /* Updated line height */
-  margin-bottom: 1rem; /* Added margin-bottom */
-  padding: 1rem; /* Added padding */
-  border: 1px solid #1aff8c; /* Added border */
-  background-color: rgba(0, 0, 0, 0.9); /* Updated background color */
-  height: 400px; /* Added height */
-}
-
-.selectable-word {
-  color: #60A5FA; /* Light blue color */
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.selectable-word:hover {
-  text-shadow: 0 0 5px currentColor;
-  color: #93C5FD; /* Slightly lighter blue on hover */
-}
-
-.terminal-footer {
-  background-color: hsla(var(--base-hue), 100%, 50%, 0.1);
-  padding: 0.5rem;
-  display: flex;
-  flex-direction: column; /* Updated flex-direction */
-  gap: 0.5rem; /* Added gap */
-  border-top: 1px solid var(--border-color);
-  border: 1px solid #1aff8c; /* Updated border */
-  .footer-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.5rem;
-  }
-  .terminal-prompt {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-  }
-  .feedback-display {
-    color: #ff4136;
-    margin-left: 1rem;
-  }
-}
-
-.footer-actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
 }
 
 .selected-word {
@@ -491,7 +520,6 @@
 .terminal-content .selectable-word:hover {
   text-shadow: 0 0 5px currentColor;
 }
-
 
 /* Cogitator Core Breach styles */
 .cogitator-core-breach {
@@ -600,15 +628,6 @@
   box-shadow: 0 0 10px hsla(var(--base-hue), 100%, 50%, 0.5);
 }
 
-.terminal-content .selectable-word {
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.terminal-content .selectable-word:hover {
-  text-shadow: 0 0 5px currentColor;
-}
-
 .terminal-content .hex-code {
   color: #1aff8c;
 }
@@ -713,7 +732,7 @@
   background-color: rgba(0, 0, 0, 0.7) !important;
   border: 1px solid #1aff8c !important;
   color: #1aff8c !important;
-  font-family: 'Share Tech Mono', monospace !important;
+  font-family: "Share Tech Mono", monospace !important;
 }
 
 .note-title-input {
@@ -725,12 +744,6 @@
   margin-bottom: 1rem;
   resize: none;
   min-height: 200px;
-}
-
-.note-content-input {
-  flex: 1;
-  margin-bottom: 1rem;
-  resize: none;
 }
 
 .edit-button,
@@ -759,43 +772,79 @@
   box-shadow: 0 0 10px rgba(26, 255, 140, 0.5);
 }
 
-/* Add these styles at the end of the file */
-
-.ship-control {
-  background-color: rgba(0, 0, 0, 0.8);
-  border: 1px solid var(--color-primary);
-  padding: 1rem;
-  color: var(--color-text);
+/* Specific styles for chat and contacts */
+.chat-container,
+.contacts-container {
+  height: 400px; /* Or adjust as needed */
+  display: flex;
+  flex-direction: column;
 }
 
-.ship-control h2 {
-  color: var(--color-primary);
-  text-shadow: 0 0 5px var(--color-glow);
+.chat-messages {
+  flex-grow: 1;
+  overflow-y: auto;
+  border: 1px solid #00cc00;
+  padding: 10px;
+  margin-bottom: 10px;
+  background-color: #0d0d0d;
 }
 
-.ship-control .toggle {
-  background-color: rgba(26, 255, 140, 0.2);
-  border: 1px solid var(--color-primary);
+.chat-input-area {
+  display: flex;
+  gap: 10px;
 }
 
-.ship-control .toggle[data-state="on"] {
-  background-color: var(--color-primary);
+.chat-input {
+  flex-grow: 1;
+  padding: 8px;
+  background-color: #0d0d0d;
+  border: 1px solid #00ff00;
+  color: #00ff00;
+  font-family: "Share Tech Mono", monospace;
 }
 
-.ship-control .progress-bar {
-  background-color: rgba(26, 255, 140, 0.2);
-  border: 1px solid var(--color-primary);
+.chat-send-button {
+  background-color: #00ff00;
+  color: #0a0a0a;
+  padding: 8px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
 }
 
-.ship-control .progress-bar-fill {
-  background-color: var(--color-primary);
+.contact-list {
+  list-style: none;
+  padding: 0;
 }
 
-.ship-control .slider {
-  accent-color: var(--color-primary);
+.contact-item {
+  padding: 8px 0;
+  border-bottom: 1px dashed #00cc00;
+  cursor: pointer;
 }
 
-.ship-control label {
-  color: var(--color-text);
-  font-weight: bold;
+.contact-item:hover {
+  background-color: #00ff00;
+  color: #0a0a0a;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .dashboard-header {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .dashboard-nav {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .dashboard-main {
+    padding: 10px;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
 }

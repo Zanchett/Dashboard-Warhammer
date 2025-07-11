@@ -1,50 +1,538 @@
+/* Base styles for a dark, cyberpunk theme */
 :root {
-  --colors-bg--300: #1e181e;
-  --colors-bg--500: #191a1e;
-  --colors-primary--200: #14f074;
-  --colors-primary--300: #14f074;
-  --colors-primary--500: #14f074;
-  --colors-primary--600: #0ea553;
-  --colors-primary--700: #096332;
-  --colors-primary--800: #064d26;
-  --colors-primary--900: #043d1f;
-  --colors-secondary--500: #2be4ea;
-  --colors-secondary--900: #295459;
-  --colors-tertiary--500: #fed33f;
-  --colors-on_bg--500: var(--colors-primary--500);
-  --colors-on_tertiary--500: var(--colors-bg--300);
-  --colors-on_primary--500: var(--colors-primary--200);
-  --colors-active--500: #2bfea0;
-  --fonts-primary: "Share Tech Mono", monospace;
-  --fonts-secondary: "Share Tech Mono", monospace;
-  --ui-glow: 0 0 5px var(--colors-primary--500);
-  --ui-glow-borders--500: 0 0 3px var(--colors-primary--500);
-  --ui-glow-color: currentcolor;
-  --ui-glow-text: -9px -6px 40px var(--ui-glow-color);
-  --ui-glow-text--dimmed: -9px -6px 40px var(--ui-glow-color);
-  --ui-elevation--1: 2px 2px 0 rgba(0, 0, 0, 0.8);
-  --ui-notch-amount: 1rem;
-  --ui-notch-hypotenuse: 22.627416px;
-  --ui-notch-path: polygon(
-    0 0,
-    100% 0,
-    100% calc(100% - var(--ui-notch-amount) + 2px),
-    calc(100% - var(--ui-notch-amount) + 2px) 100%,
-    0 100%
-  );
+  --background-color: #0a0a0a;
+  --primary-color: #00ff00; /* Neon Green */
+  --secondary-color: #00cc00; /* Slightly darker green */
+  --text-color: #00ff00;
+  --border-color: #00ff00;
+  --shadow-color: #00ff00;
+  --input-bg: #0d0d0d;
+  --button-bg: #00ff00;
+  --button-text: #0a0a0a;
+  --error-color: #ff0000;
+  --flicker-color: #00ff00;
 }
 
 body {
-  background-color: var(--colors-bg--500);
-  background-image: radial-gradient(
-    ellipse at 33% 10%,
-    var(--colors-primary--800) 0%,
-    transparent 75%
-  );
-  background-repeat: no-repeat;
-  color: var(--colors-on_bg--500);
-  font-family: var(--fonts-primary);
-  font-size: 100%;
-  line-height: 1.4;
-  min-height: 100vh;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  font-family: "Share Tech Mono", monospace;
+  text-shadow: 0 0 5px var(--text-color);
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* General component styling */
+.cyber-container {
+  background-color: #1a1a1a;
+  border: 2px solid var(--border-color);
+  box-shadow: 0 0 15px var(--shadow-color);
+  padding: 40px;
+  border-radius: 8px;
+  text-align: center;
+  width: 100%;
+  max-width: 400px;
+  animation: glow 1.5s infinite alternate;
+}
+
+.cyber-title {
+  font-size: 2.5em;
+  margin-bottom: 20px;
+  color: var(--primary-color);
+  text-shadow: 0 0 10px var(--primary-color);
+}
+
+.cyber-input {
+  width: calc(100% - 20px);
+  padding: 10px;
+  margin-bottom: 15px;
+  background-color: var(--input-bg);
+  border: 1px solid var(--border-color);
+  color: var(--text-color);
+  font-family: "Share Tech Mono", monospace;
+  box-shadow: 0 0 5px var(--shadow-color);
+  outline: none;
+}
+
+.cyber-input::placeholder {
+  color: var(--secondary-color);
+}
+
+.cyber-button {
+  background-color: var(--button-bg);
+  color: var(--button-text);
+  padding: 12px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1.1em;
+  font-weight: bold;
+  text-transform: uppercase;
+  box-shadow: 0 0 10px var(--shadow-color);
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  width: 100%;
+}
+
+.cyber-button:hover {
+  background-color: var(--secondary-color);
+  box-shadow: 0 0 20px var(--shadow-color);
+}
+
+.cyber-link {
+  color: var(--primary-color);
+  text-decoration: none;
+  margin-top: 20px;
+  display: block;
+  font-size: 0.9em;
+  transition: color 0.3s ease;
+}
+
+.cyber-link:hover {
+  color: var(--secondary-color);
+}
+
+.cyber-error-message {
+  color: var(--error-color);
+  margin-top: 10px;
+  font-size: 0.9em;
+  text-shadow: 0 0 5px var(--error-color);
+}
+
+/* Animations */
+@keyframes flicker {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.95;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes glow {
+  0% {
+    box-shadow: 0 0 15px var(--shadow-color);
+  }
+  50% {
+    box-shadow: 0 0 25px var(--shadow-color), 0 0 5px var(--shadow-color) inset;
+  }
+  100% {
+    box-shadow: 0 0 15px var(--shadow-color);
+  }
+}
+
+/* Utility classes for text and background */
+.text-primary {
+  color: var(--primary-color);
+}
+
+.bg-background {
+  background-color: var(--background-color);
+}
+
+.border-primary {
+  border-color: var(--border-color);
+}
+
+.hover\:bg-primary:hover {
+  background-color: var(--primary-color);
+}
+
+.hover\:text-primary-foreground:hover {
+  color: var(--button-text);
+}
+
+.bg-primary {
+  background-color: var(--primary-color);
+}
+
+.text-primary-foreground {
+  color: var(--button-text);
+}
+
+.hover\:bg-primary-80:hover {
+  background-color: rgba(0, 255, 0, 0.8); /* 80% opacity of primary color */
+}
+
+.data-state-active-border-primary[data-state="active"] {
+  border-color: var(--primary-color);
+}
+
+.data-state-active-text-primary[data-state="active"] {
+  color: var(--primary-color);
+}
+
+.border-b {
+  border-bottom: 1px solid var(--border-color);
+}
+
+.border-t {
+  border-top: 1px solid var(--border-color);
+}
+
+.border {
+  border: 1px solid var(--border-color);
+}
+
+.rounded {
+  border-radius: 0.25rem; /* Tailwind's default rounded-md */
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.hover\:bg-primary:hover {
+  background-color: var(--primary-color);
+}
+
+.hover\:bg-opacity-10:hover {
+  background-color: rgba(0, 255, 0, 0.1);
+}
+
+.text-destructive {
+  color: var(--error-color);
+}
+
+.bg-destructive {
+  background-color: var(--error-color);
+}
+
+.hover\:bg-destructive-90:hover {
+  background-color: rgba(255, 0, 0, 0.9);
+}
+
+.border-destructive {
+  border-color: var(--error-color);
+}
+
+.text-muted-foreground {
+  color: #888; /* A muted grey */
+}
+
+.bg-muted {
+  background-color: #333; /* A muted dark background */
+}
+
+.border-input {
+  border-color: var(--border-color);
+}
+
+.ring-offset-background {
+  --tw-ring-offset-color: var(--background-color);
+}
+
+.focus-visible\:ring-ring:focus-visible {
+  --tw-ring-color: var(--primary-color);
+}
+
+.focus-visible\:ring-offset-2:focus-visible {
+  --tw-ring-offset-width: 2px;
+}
+
+.placeholder-text-muted-foreground::placeholder {
+  color: var(--secondary-color);
+}
+
+.disabled\:cursor-not-allowed:disabled {
+  cursor: not-allowed;
+}
+
+.disabled\:opacity-50:disabled {
+  opacity: 0.5;
+}
+
+.bg-card {
+  background-color: #1a1a1a;
+}
+
+.text-card-foreground {
+  color: var(--text-color);
+}
+
+.border-border {
+  border-color: var(--border-color);
+}
+
+.shadow-sm {
+  box-shadow: 0 1px 2px 0 rgba(0, 255, 0, 0.05);
+}
+
+.shadow-md {
+  box-shadow: 0 4px 6px -1px rgba(0, 255, 0, 0.1), 0 2px 4px -2px rgba(0, 255, 0, 0.1);
+}
+
+.shadow-lg {
+  box-shadow: 0 10px 15px -3px rgba(0, 255, 0, 0.1), 0 4px 6px -4px rgba(0, 255, 0, 0.1);
+}
+
+.bg-popover {
+  background-color: #1a1a1a;
+}
+
+.text-popover-foreground {
+  color: var(--text-color);
+}
+
+.bg-secondary {
+  background-color: #333;
+}
+
+.text-secondary-foreground {
+  color: var(--text-color);
+}
+
+.bg-accent {
+  background-color: #00cc00;
+}
+
+.text-accent-foreground {
+  color: #0a0a0a;
+}
+
+.bg-transparent {
+  background-color: transparent;
+}
+
+.text-white {
+  color: #ffffff;
+}
+
+.text-black {
+  color: #000000;
+}
+
+.text-gray-400 {
+  color: #9ca3af;
+}
+
+.text-gray-500 {
+  color: #6b7280;
+}
+
+.text-gray-600 {
+  color: #4b5563;
+}
+
+.text-gray-700 {
+  color: #374151;
+}
+
+.text-gray-800 {
+  color: #1f2937;
+}
+
+.text-gray-900 {
+  color: #111827;
+}
+
+.bg-gray-100 {
+  background-color: #f3f4f6;
+}
+
+.bg-gray-200 {
+  background-color: #e5e7eb;
+}
+
+.bg-gray-300 {
+  background-color: #d1d5db;
+}
+
+.bg-gray-400 {
+  background-color: #9ca3af;
+}
+
+.bg-gray-500 {
+  background-color: #6b7280;
+}
+
+.bg-gray-600 {
+  background-color: #4b5563;
+}
+
+.bg-gray-700 {
+  background-color: #374151;
+}
+
+.bg-gray-800 {
+  background-color: #1f2937;
+}
+
+.bg-gray-900 {
+  background-color: #111827;
+}
+
+.border-gray-300 {
+  border-color: #d1d5db;
+}
+
+.border-gray-400 {
+  border-color: #9ca3af;
+}
+
+.border-gray-500 {
+  border-color: #6b7280;
+}
+
+.border-gray-600 {
+  border-color: #4b5563;
+}
+
+.border-gray-700 {
+  border-color: #374151;
+}
+
+.border-gray-800 {
+  border-color: #1f2937;
+}
+
+.border-gray-900 {
+  border-color: #111827;
+}
+
+.text-blue-500 {
+  color: #3b82f6;
+}
+
+.text-blue-600 {
+  color: #2563eb;
+}
+
+.text-blue-700 {
+  color: #1d4ed8;
+}
+
+.bg-blue-500 {
+  background-color: #3b82f6;
+}
+
+.bg-blue-600 {
+  background-color: #2563eb;
+}
+
+.bg-blue-700 {
+  background-color: #1d4ed8;
+}
+
+.focus\:ring-blue-500:focus {
+  --tw-ring-color: #3b82f6;
+}
+
+.focus\:border-blue-500:focus {
+  border-color: #3b82f6;
+}
+
+.hover\:bg-blue-700:hover {
+  background-color: #1d4ed8;
+}
+
+.focus\:ring-blue-600:focus {
+  --tw-ring-color: #2563eb;
+}
+
+.focus\:border-blue-600:focus {
+  border-color: #2563eb;
+}
+
+.hover\:bg-blue-800:hover {
+  background-color: #1e40af;
+}
+
+.text-green-500 {
+  color: #22c55e;
+}
+
+.text-green-600 {
+  color: #16a34a;
+}
+
+.text-green-700 {
+  color: #15803d;
+}
+
+.bg-green-500 {
+  background-color: #22c55e;
+}
+
+.bg-green-600 {
+  background-color: #16a34a;
+}
+
+.bg-green-700 {
+  background-color: #15803d;
+}
+
+.focus\:ring-green-500:focus {
+  --tw-ring-color: #22c55e;
+}
+
+.focus\:border-green-500:focus {
+  border-color: #22c55e;
+}
+
+.hover\:bg-green-700:hover {
+  background-color: #15803d;
+}
+
+.focus\:ring-green-600:focus {
+  --tw-ring-color: #16a34a;
+}
+
+.focus\:border-green-600:focus {
+  border-color: #16a34a;
+}
+
+.hover\:bg-green-800:hover {
+  background-color: #14532d;
+}
+
+.text-red-500 {
+  color: #ef4444;
+}
+
+.text-red-600 {
+  color: #dc2626;
+}
+
+.text-red-700 {
+  color: #b91c1c;
+}
+
+.bg-red-500 {
+  background-color: #ef4444;
+}
+
+.bg-red-600 {
+  background-color: #dc2626;
+}
+
+.bg-red-700 {
+  background-color: #b91c1c;
+}
+
+.focus\:ring-red-500:focus {
+  --tw-ring-color: #ef4444;
+}
+
+.focus\:border-red-500:focus {
+  border-color: #ef4444;
+}
+
+.hover\:bg-red-700:hover {
+  background-color: #b91c1c;
+}
+
+.focus\:ring-red-600:focus {
+  --tw-ring-color: #dc2626;
+}
+
+.focus\:border-red-600:focus {
+  border-color: #dc2626;
+}
+
+.hover\:bg-red-800:hover {
+  background-color: #991b1b;
 }

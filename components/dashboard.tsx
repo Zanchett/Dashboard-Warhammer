@@ -11,8 +11,15 @@ import CogitatorCoreBreach from './CogitatorCoreBreach';
 import ServitorAssistant from './ServitorAssistant';
 import MechanicusUpgrades from './MechanicusUpgrades';
 import Library from './Library';
-import Messages from './Messages'; // Import the Messages component
-import Contacts from './Contacts'; // Added import for Contacts component
+import Messages from './Messages';
+import Contacts from './Contacts';
+import Missions from './Missions';
+import { useTranslation } from 'react-i18next';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+import CustomKnob from './CustomKnob';
+import Notes from './Notes';
+import ShipControl from './ShipControl';
+import Market from './Market';
 
 const useRandomValue = (min: number, max: number, interval: number) => {
   const [value, setValue] = useState(Math.random() * (max - min) + min);
@@ -69,14 +76,17 @@ const HackingView = () => {
 };
 
 export default function Dashboard({ username }: { username: string }) {
+  const { t } = useTranslation();
   const [time, setTime] = useState(new Date())
   const [activeTab, setActiveTab] = useState('MAIN')
   const [currentView, setCurrentView] = useState<string>('main')
   const [conversations, setConversations] = useState<any[]>([])
-  const [activeConversation, setActiveConversation] = useState<string | null>(null); // Added activeConversation state
+  const [activeConversation, setActiveConversation] = useState<string | null>(null);
 
   const cpuUsage = useRandomValue(30, 60, 5000);
   const memoryUsage = useRandomValue(40, 70, 7000);
+  const warpStability = useRandomValue(70, 95, 10000);
+  const gellarFieldStrength = useRandomValue(80, 100, 8000);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -103,9 +113,16 @@ export default function Dashboard({ username }: { username: string }) {
     fetchConversations();
   }, [username]);
 
-  const handleStartConversation = (contactId: string) => { // Added handleStartConversation function
+  const handleStartConversation = (contactId: string) => {
     setActiveConversation(contactId);
     setCurrentView('messages');
+  };
+
+  const generateRandomData = (count: number) => {
+    return Array.from({ length: count }, (_, i) => ({
+      name: `Data ${i + 1}`,
+      value: Math.floor(Math.random() * 100)
+    }));
   };
 
   const renderContent = () => {
@@ -116,18 +133,20 @@ export default function Dashboard({ username }: { username: string }) {
         return <Wallet username={username} />;
       case 'hacking':
         return <HackingView />;
-      case 'messages': // Updated case for messages
+      case 'messages':
         return (
           <Messages 
             username={username} 
             conversationId={activeConversation} 
-            onStartConversation={handleStartConversation} // Pass the function to Messages
+            onStartConversation={handleStartConversation} 
           />
         );
-      case 'contacts': // Added case for contacts
+      case 'contacts':
         return (
-          <Contacts username={username} onStartConversation={handleStartConversation} /> // Pass the function to Contacts
+          <Contacts username={username} onStartConversation={handleStartConversation} />
         );
+      case 'missions':
+        return <Missions username={username} />;
       case 'main':
       default:
         return (
@@ -152,38 +171,162 @@ export default function Dashboard({ username }: { username: string }) {
             <div className="terminal-content">
               {activeTab === 'MAIN' ? (
                 <div className="main-content">
-                  <div>Processes: 712 total, 6 running, 706 sleeping, 2607 threads</div>
-                  <div>Load Avg: 4.85, 2.84, 2.10 CPU usage: {cpuUsage.toFixed(2)}% user, 29.70% sys, 31.68% idle</div>
-                  <div>SharedLibs: 215M resident, 57M data, 23M linkedit.</div>
-                  <div>MemRegions: 318147 total, 5823M resident, 190M private, 2646M shared.</div>
-                  <div>PhysMem: 16G used (3558M wired), 103M unused.</div>
-                  <div>VM: 13T vsize, 1299M framework vsize, 4728010(0) swapins, 4922315(0) swapouts.</div>
-                  <span className="stats-label">Missions Completed</span>
-                  <span className="stats-value">35</span>
+                  <div className="cogitator-status">
+                    <h3>Cogitator Status</h3>
+                    <div className="status-grid">
+                      <div className="status-item">
+                        <span>Machine Spirit:</span>
+                        <span className="status-value">Appeased</span>
+                      </div>
+                      <div className="status-item">
+                        <span>Warp Interference:</span>
+                        <span className="status-value">Minimal</span>
+                      </div>
+                      <div className="status-item">
+                        <span>Noosphere Connectivity:</span>
+                        <span className="status-value">Optimal</span>
+                      </div>
+                      <div className="status-item">
+                        <span>Sanctified Rites:</span>
+                        <span className="status-value">Performed</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="system-metrics">
+                    <h3>Cogitator Performance Metrics</h3>
+                    <div className="metrics-grid grid-cols-4 gap-4">
+                      <div className="metric-item">
+                        <CustomKnob
+                          value={cpuUsage}
+                          min={0}
+                          max={100}
+                          size={80}
+                          color="#1aff8c"
+                          backgroundColor="#0a3d29"
+                          label="Computational Efficiency"
+                          labelFontSize={10}
+                        />
+                      </div>
+                      <div className="metric-item">
+                        <CustomKnob
+                          value={memoryUsage}
+                          min={0}
+                          max={100}
+                          size={80}
+                          color="#1aff8c"
+                          backgroundColor="#0a3d29"
+                          label="Cogitation Capacity"
+                          labelFontSize={10}
+                        />
+                      </div>
+                      <div className="metric-item">
+                        <CustomKnob
+                          value={warpStability}
+                          min={0}
+                          max={100}
+                          size={80}
+                          color="#1aff8c"
+                          backgroundColor="#0a3d29"
+                          label="Warp Stability"
+                          labelFontSize={10}
+                        />
+                      </div>
+                      <div className="metric-item">
+                        <CustomKnob
+                          value={gellarFieldStrength}
+                          min={0}
+                          max={100}
+                          size={80}
+                          color="#1aff8c"
+                          backgroundColor="#0a3d29"
+                          label="Gellar Field Integrity"
+                          labelFontSize={10}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="data-analysis">
+                    <h3>Warp Anomaly Patterns</h3>
+                    <div className="analysis-container">
+                      <LineChart width={800} height={300} data={generateRandomData(10)}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#1aff8c" />
+                        <XAxis dataKey="name" stroke="#1aff8c" />
+                        <YAxis stroke="#1aff8c" />
+                        <Tooltip contentStyle={{ backgroundColor: '#0a3d29', border: '1px solid #1aff8c' }} />
+                        <Legend />
+                        <Line type="monotone" dataKey="value" stroke="#1aff8c" name="Warp Disturbance Level" />
+                      </LineChart>
+                    </div>
+                  </div>
+                  <div className="system-log">
+                    <h3>Noosphere Activity Log</h3>
+                    <div className="log-entries">
+                      <div className="log-entry">
+                        <span className="log-timestamp">[3021.998.M41]</span>
+                        <span className="log-message">Gellar Field harmonics optimized. Warp protection increased by 3.4%</span>
+                      </div>
+                      <div className="log-entry">
+                        <span className="log-timestamp">[3021.999.M41]</span>
+                        <span className="log-message">WARNING: Chaotic data patterns detected in sector 9K. Purification protocols engaged.</span>
+                      </div>
+                      <div className="log-entry">
+                        <span className="log-timestamp">[3022.001.M41]</span>
+                        <span className="log-message">Machine Spirit communion successful. Blessed algorithms efficiency +7.8%</span>
+                      </div>
+                      <div className="log-entry">
+                        <span className="log-timestamp">[3022.002.M41]</span>
+                        <span className="log-message">ALERT: Unauthorized psychic signature detected. Implementing hexagrammic wards.</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               ) : (
-                <table className="process-list">
-                  <thead>
-                    <tr>
-                      <th>PID</th>
-                      <th>COMMAND</th>
-                      <th>%CPU</th>
-                      <th>TIME</th>
-                      <th>MEM</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {PROCESSES.map(process=> (
-                      <tr key={process.pid}>
-                        <td>{process.pid}</td>
-                        <td>{process.command}</td>
-                        <td>{process.cpu}</td>
-                        <td>{process.time}</td>
-                        <td>{process.mem}</td>
+                <div className="processes-content">
+                  <h3>Active Processes</h3>
+                  <table className="process-list">
+                    <thead>
+                      <tr>
+                        <th>PID</th>
+                        <th>COMMAND</th>
+                        <th>CPU</th>
+                        <th>MEM</th>
+                        <th>STATUS</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {PROCESSES.map(process=> (
+                        <tr key={process.pid}>
+                          <td>{process.pid}</td>
+                          <td>{process.command}</td>
+                          <td>{process.cpu}</td>
+                          <td>{process.mem}</td>
+                          <td className={`process-status ${process.status.toLowerCase()}`}>{process.status}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  <div className="process-controls">
+                    <h3>Process Control</h3>
+                    <div className="control-buttons">
+                      <button className="control-button">Purge Heretical Data</button>
+                      <button className="control-button">Invoke Machine Spirit</button>
+                      <button className="control-button">Recite Litany of Activation</button>
+                    </div>
+                  </div>
+                  <div className="resource-allocation">
+                    <h3>Resource Allocation</h3>
+                    <div className="allocation-chart">
+                      <LineChart width={600} height={300} data={generateRandomData(20)}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#1aff8c" />
+                        <XAxis dataKey="name" stroke="#1aff8c" />
+                        <YAxis stroke="#1aff8c" />
+                        <Tooltip contentStyle={{ backgroundColor: '#0a3d29', border: '1px solid #1aff8c' }} />
+                        <Legend />
+                        <Line type="monotone" dataKey="value" stroke="#1aff8c" name="Resource Usage" />
+                      </LineChart>
+                    </div>
+                  </div>
+                </div>
               )}
             </div>
           </>
@@ -194,6 +337,12 @@ export default function Dashboard({ username }: { username: string }) {
         return <MechanicusUpgrades username={username} />;
       case 'library':
         return <Library />;
+      case 'notes':
+        return <Notes />;
+      case 'ship-control':
+        return <ShipControl />;
+      case 'market':
+        return <Market username={username} />;
     }
   };
 
@@ -210,12 +359,16 @@ export default function Dashboard({ username }: { username: string }) {
               <span onClick={() => setCurrentView('hacking')}>Hacking</span>
               <span onClick={() => setCurrentView('servitor-assistant')}>Servitor Assistant</span>
               <span onClick={() => setCurrentView('library')}>Library</span>
+              <span onClick={() => setCurrentView('notes')}>Notes</span>
+              <span onClick={() => setCurrentView('market')}>Market</span>
             </div>
           </div>
           <div className="dropdown">
             <span className="dropdown-trigger">SYSTEM</span>
             <div className="dropdown-content">
               <span onClick={() => setCurrentView('mechanicus-upgrades')}>Mechanicus Upgrades</span>
+              <span onClick={() => setCurrentView('missions')}>Missions</span>
+              <span onClick={() => setCurrentView('ship-control')}>Ship Control</span>
             </div>
           </div>
           <div className="dropdown">
@@ -326,10 +479,14 @@ export default function Dashboard({ username }: { username: string }) {
 }
 
 const PROCESSES = [
-  { pid: 95089, command: 'Auspex Scanner', cpu: '96.2', time: '01:15.98', mem: '227M+' },
-  { pid: 170, command: 'Vox Caster', cpu: '53.9', time: '08:13.47', mem: '599M' },
-  { pid: 95087, command: 'Servitor Control', cpu: '49.8', time: '00:46.92', mem: '527M-' },
-  { pid: 96592, command: 'Warp Drive Monitor', cpu: '1.6', time: '00:02.52', mem: '2776K' },
-  { pid: 95077, command: 'Gellar Field', cpu: '16.4', time: '00:17.24', mem: '46M+' },
+  { pid: 95089, command: 'Auspex Scanner', cpu: '96.2%', mem: '227M', status: 'RUNNING' },
+  { pid: 170, command: 'Vox Caster', cpu: '53.9%', mem: '599M', status: 'RUNNING' },
+  { pid: 95087, command: 'Servitor Control', cpu: '49.8%', mem: '527M', status: 'RUNNING' },
+  { pid: 96592, command: 'Warp Drive Monitor', cpu: '1.6%', mem: '2776K', status: 'IDLE' },
+  { pid: 95077, command: 'Gellar Field', cpu: '16.4%', mem: '46M', status: 'RUNNING' },
+  { pid: 98234, command: 'Cogitator Core', cpu: '78.3%', mem: '1.2G', status: 'RUNNING' },
+  { pid: 99102, command: 'Noosphere Interface', cpu: '22.7%', mem: '345M', status: 'RUNNING' },
+  { pid: 97856, command: 'Heretic Detection', cpu: '35.1%', mem: '678M', status: 'RUNNING' },
+  { pid: 96123, command: 'Machine Spirit Appeasement', cpu: '5.4%', mem: '89M', status: 'IDLE' },
+  { pid: 98765, command: 'Warp Navigation', cpu: '62.8%', mem: '890M', status: 'RUNNING' },
 ]
-

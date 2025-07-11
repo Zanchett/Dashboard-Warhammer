@@ -1,27 +1,39 @@
-import { NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
+import { NextResponse } from "next/server"
 
-const messagesFile = path.join(process.cwd(), 'data', 'messages.json');
+// In-memory storage for messages in development
+const memoryMessages: any[] = []
 
 export async function GET() {
   try {
-    const messages = JSON.parse(fs.readFileSync(messagesFile, 'utf-8'));
-    return NextResponse.json(messages);
+    console.log("[Messages API] Fetching messages from memory storage...")
+    return NextResponse.json(memoryMessages)
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to fetch messages' }, { status: 500 });
+    console.error("Error fetching messages:", error)
+    return NextResponse.json({ error: "Failed to fetch messages" }, { status: 500 })
   }
 }
 
 export async function POST(request: Request) {
   try {
-    const newMessage = await request.json();
-    const messages = JSON.parse(fs.readFileSync(messagesFile, 'utf-8'));
-    messages.push(newMessage);
-    fs.writeFileSync(messagesFile, JSON.stringify(messages, null, 2));
-    return NextResponse.json(newMessage, { status: 201 });
+    const { message, username } = await request.json()
+
+    if (!message || !username) {
+      return NextResponse.json({ error: "Message and username are required" }, { status: 400 })
+    }
+
+    const newMessage = {
+      id: Date.now().toString(),
+      message,
+      username,
+      timestamp: new Date().toISOString(),
+    }
+
+    memoryMessages.push(newMessage)
+    console.log("[Messages API] Message added to memory storage:", newMessage.id)
+
+    return NextResponse.json(newMessage)
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to send message' }, { status: 500 });
+    console.error("Error saving message:", error)
+    return NextResponse.json({ error: "Failed to save message" }, { status: 500 })
   }
 }
-

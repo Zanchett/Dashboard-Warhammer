@@ -37,4 +37,3 @@ export const CyberpunkInput: React.FC<CyberpunkInputProps> = ({ onSubmit, placeh
     </form>
   );
 };
-

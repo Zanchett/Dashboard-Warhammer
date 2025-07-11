@@ -1,0 +1,190 @@
+.cogitator-missions {
+  background-color: #000000;
+  color: #1aff8c;
+  font-family: 'Share Tech Mono', monospace;
+  height: 100%;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.terminal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  background-color: rgba(26, 255, 140, 0.1);
+  border: 1px solid #1aff8c;
+}
+
+.header-title {
+  font-weight: bold;
+  color: #1aff8c;
+}
+
+.header-status {
+  color: #1aff8c;
+}
+
+.missions-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  height: calc(100vh - 120px); /* Adjusted to account for header and padding */
+}
+
+.mission-categories {
+  display: flex;
+  gap: 0.5rem;
+  border-bottom: 1px solid #1aff8c;
+  padding-bottom: 0.5rem;
+}
+
+.category-tab {
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  background-color: rgba(26, 255, 140, 0.1);
+  border: 1px solid #1aff8c;
+  transition: all 0.2s ease;
+}
+
+.category-tab:hover, .category-tab.active {
+  background-color: rgba(26, 255, 140, 0.3);
+}
+
+.mission-list {
+  border: 1px solid #1aff8c;
+  background-color: rgba(0, 0, 0, 0.9);
+  height: 200px; /* Fixed height */
+  overflow-y: auto;
+}
+
+.mission-entry {
+  padding: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  gap: 1rem;
+  border-bottom: 1px solid rgba(26, 255, 140, 0.2);
+}
+
+.mission-entry:hover, .mission-entry.selected {
+  background-color: rgba(26, 255, 140, 0.2);
+}
+
+.hex-prefix {
+  color: rgba(26, 255, 140, 0.7);
+  font-family: 'Share Tech Mono', monospace;
+}
+
+.mission-details {
+  flex: 1;
+  border: 1px solid #1aff8c;
+  background-color: rgba(0, 0, 0, 0.9);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  min-height: 300px;
+  max-height: calc(100vh - 400px);
+  overflow-y: auto;
+}
+
+.mission-header {
+  padding: 0.5rem;
+  border-bottom: 1px solid #1aff8c;
+  margin-bottom: 1rem;
+  display: flex;
+  gap: 1rem;
+}
+
+.mission-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  flex-grow: 1;
+  overflow-y: auto;
+}
+
+.mission-briefing {
+  background-color: rgba(26, 255, 140, 0.1);
+  padding: 1rem;
+  border: 1px solid rgba(26, 255, 140, 0.3);
+  font-family: 'Share Tech Mono', monospace;
+  line-height: 1.6;
+}
+
+.mission-signature {
+  text-align: right;
+  color: rgba(26, 255, 140, 0.8);
+  font-style: italic;
+  margin: 1rem 0;
+}
+
+.mission-metadata {
+  display: grid;
+  gap: 0.5rem;
+  padding: 1rem;
+  background-color: rgba(26, 255, 140, 0.1);
+  border: 1px solid rgba(26, 255, 140, 0.3);
+}
+
+.execute-button {
+  width: 100%;
+  background-color: rgba(26, 255, 140, 0.2);
+  border: 1px solid #1aff8c;
+  color: #1aff8c;
+  padding: 0.75rem;
+  margin-top: 1rem;
+  font-family: 'Share Tech Mono', monospace;
+  transition: all 0.3s ease;
+}
+
+.execute-button:hover:not(:disabled) {
+  background-color: rgba(26, 255, 140, 0.3);
+  box-shadow: 0 0 10px rgba(26, 255, 140, 0.5);
+}
+
+.execute-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: rgba(26, 255, 140, 0.1);
+}
+
+.no-selection {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  color: rgba(26, 255, 140, 0.7);
+  font-style: italic;
+}
+
+/* Add scanline effect */
+.cogitator-missions::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    transparent 50%,
+    rgba(0, 0, 0, 0.05) 50%
+  );
+  background-size: 100% 4px;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* Add screen flicker animation */
+@keyframes flicker {
+  0% { opacity: 0.99; }
+  50% { opacity: 1; }
+  100% { opacity: 0.99; }
+}
+
+.cogitator-missions {
+  animation: flicker 0.15s infinite;
+}

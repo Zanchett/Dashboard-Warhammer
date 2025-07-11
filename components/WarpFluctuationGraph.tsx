@@ -76,4 +76,3 @@ const WarpFluctuationGraph: React.FC = () => {
 };
 
 export default WarpFluctuationGraph;
-

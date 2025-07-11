@@ -14,18 +14,14 @@ const HackingMinigame: React.FC<HackingMinigameProps> = ({ onSuccess, onFailure 
   const [terminalContent, setTerminalContent] = useState<string>('');
 
   const warhammer40kWords = [
-    'ADEPTUS', 'ASTARTES', 'IMPERIUM', 'MECHANICUS', 'INQUISITOR',
-    'XENOS', 'HERETIC', 'WARPSTORM', 'BOLTER', 'EMPEROR',
-    'COGITATOR', 'SERVITOR', 'TECHPRIEST', 'OMNISSIAH', 'VOIDSHIP',
-    'CHAINSWORD', 'LASGUN', 'EXTERMINATUS', 'GELLARFIELD', 'WARP',
-    'PSYKER', 'LIBRARIAN', 'TERMINATOR', 'DREADNOUGHT', 'THUNDERHAWK',
-    'CERAMITE', 'ADAMANTIUM', 'PROMETHIUM', 'PLASTEEL', 'FERROCRETE'
+    'PSYKER', 'OMNISSIAH', 'XENOS', 'HERETIC', 'EMPEROR',
+    'ADEPTUS', 'MECHANICUS', 'GELLAR', 'CERAMITE', 'FERROCRETE',
+    'PLASTEEL', 'ADAMANTIUM', 'LASGUN', 'THUNDERHAWK', 'TECHPRIEST'
   ];
 
-  const randomBlurbs = [
-    '0xDEADBEEF', '0xC0FFEE', 'SEGMENTATION FAULT', 'CORE DUMPED',
-    'BUFFER OVERFLOW', 'STACK TRACE', 'MEMORY LEAK', 'NULL POINTER',
-    'WARP BREACH', 'GELLAR FIELD FLUCTUATION', 'CHAOS INCURSION'
+  const technicalTerms = [
+    'BUFFER OVERFLOW', 'NULL POINTER', 'SEGMENTATION FAULT',
+    'CORE DUMPED', 'MEMORY LEAK', 'STACK TRACE', 'WARP BREACH'
   ];
 
   const generateRandomWords = useCallback(() => {
@@ -49,47 +45,27 @@ const HackingMinigame: React.FC<HackingMinigameProps> = ({ onSuccess, onFailure 
 
   const generateTerminalContent = (gameWords: string[]) => {
     let content = '';
-    const hexChars = '0123456789ABCDEF';
-    const totalLines = 16;
-    const wordsPerLine = 2;
-    const words = [...gameWords]; // Create a copy of gameWords to work with
-
-    // Create an array of all possible word positions
-    const totalPositions = totalLines * wordsPerLine;
-    const wordPositions = Array.from({ length: totalPositions }, (_, i) => i);
-    // Shuffle the positions
-    wordPositions.sort(() => Math.random() - 0.5);
-    // Take only as many positions as we have words
-    const selectedPositions = new Set(wordPositions.slice(0, words.length));
-
-    for (let i = 0; i < totalLines; i++) {
+    const availableWords = [...gameWords];
+    for (let i = 0; i < 12; i++) {
       const lineAddress = (i * 12).toString(16).padStart(4, '0').toUpperCase();
       content += `0x${lineAddress} `;
 
-      for (let j = 0; j < wordsPerLine; j++) {
-        const currentPosition = i * wordsPerLine + j;
-
-        if (selectedPositions.has(currentPosition) && words.length > 0) {
-          // Insert a selectable word
-          const wordIndex = Math.floor(Math.random() * words.length);
-          const word = words.splice(wordIndex, 1)[0];
-          content += `<span class="selectable-word">${word}</span> `;
+      const terms = [];
+      for (let j = 0; j < 4; j++) {
+        if (availableWords.length > 0 && Math.random() < 0.3) {
+          const index = Math.floor(Math.random() * availableWords.length);
+          terms.push(availableWords.splice(index, 1)[0]);
         } else {
-          // Insert a random blurb
-          const randomBlurb = randomBlurbs[Math.floor(Math.random() * randomBlurbs.length)];
-          content += `${randomBlurb} `;
+          terms.push(
+            Math.random() > 0.5
+              ? warhammer40kWords[Math.floor(Math.random() * warhammer40kWords.length)]
+              : technicalTerms[Math.floor(Math.random() * technicalTerms.length)]
+          );
         }
-
-        // Add some random hex characters
-        for (let k = 0; k < 8; k++) {
-          content += hexChars[Math.floor(Math.random() * 16)];
-        }
-        content += ' ';
       }
 
-      content += '\n';
+      content += terms.join(' ') + '\n';
     }
-
     setTerminalContent(content);
   };
 
@@ -139,28 +115,53 @@ const HackingMinigame: React.FC<HackingMinigameProps> = ({ onSuccess, onFailure 
     return word1.split('').filter((char, index) => char === word2[index]).length;
   };
 
+  const renderTerminalContent = () => {
+    return terminalContent.split('\n').map((line, index) => (
+      <div key={index}>
+        {line.split(' ').map((word, wordIndex) => {
+          if (words.includes(word)) {
+            return (
+              <span
+                key={wordIndex}
+                className="selectable-word"
+                onClick={() => handleWordSelect(word)}
+              >
+                {word}{' '}
+              </span>
+            );
+          }
+          return <span key={wordIndex} className="hex-code">{word} </span>;
+        })}
+      </div>
+    ));
+  };
+
   return (
     <div className="hacking-minigame">
       <div className="terminal-header">
-        COGITATOR INTERFACE v2.781
-        <div className="attempts-display">ATTEMPTS REMAINING: {attempts}</div>
+        <span>COGITATOR INTERFACE v2.781</span>
+        <span>ATTEMPTS REMAINING: {attempts}</span>
       </div>
-      <div className="terminal-content" dangerouslySetInnerHTML={{ __html: terminalContent }} onClick={(e) => {
-        const target = e.target as HTMLElement;
-        if (target.classList.contains('selectable-word')) {
-          handleWordSelect(target.textContent || '');
-        }
-      }} />
+      <div className="terminal-content" style={{ height: '300px', overflowY: 'auto' }}>
+        {renderTerminalContent()}
+      </div>
       <div className="terminal-footer">
-        <div className="selected-word">{selectedWord || 'SELECT A WORD'}</div>
-        <button className="hack-button" onClick={handleGuess} disabled={!selectedWord || attempts === 0}>
-          EXECUTE OVERRIDE
-        </button>
-        <div className="feedback-display">{feedback}</div>
+        <div className="footer-content">
+          <div className="terminal-prompt">
+            SELECTED: {selectedWord || 'NONE'}
+            {feedback && <span className="feedback-display">{feedback}</span>}
+          </div>
+          <button
+            className="execute-button"
+            onClick={handleGuess}
+            disabled={!selectedWord}
+          >
+            EXECUTE OVERRIDE
+          </button>
+        </div>
       </div>
     </div>
   );
 };
 
 export default HackingMinigame;
-

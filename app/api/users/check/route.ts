@@ -21,4 +21,3 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'An error occurred while checking the user' }, { status: 500 });
   }
 }
-

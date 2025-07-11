@@ -11,11 +11,15 @@ import StartupAnimation from './StartupAnimation'
 import '../styles/register-screen.css'
 import '../styles/transitions.css'
 
-export default function RegisterScreen() {
+interface RegisterScreenProps {
+  onRegister: (username: string, password: string) => Promise<void>
+  error: string | null
+}
+
+export default function RegisterScreen({ onRegister, error }: RegisterScreenProps) {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [showRegister, setShowRegister] = useState(false)
   const [isVisible, setIsVisible] = useState(true)
@@ -36,49 +40,30 @@ export default function RegisterScreen() {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError('')
     setIsLoading(true)
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match')
       setIsLoading(false)
       return
     }
 
-    console.log('Attempting registration for username:', username)
-
     try {
-      const response = await fetch('/api/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Registration failed')
-      }
-
-      console.log('User registered:', data)
-      setIsVisible(false)
-      setTimeout(() => router.push('/'), 300)
-    } catch (err) {
-      console.error('Registration error:', err)
-      setError(err instanceof Error ? err.message : 'An error occurred during registration')
+      await onRegister(username, password)
+    } catch (error) {
+      console.error('Registration error:', error)
     } finally {
       setIsLoading(false)
     }
   }
 
   const handleBackToLogin = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    e.preventDefault();
-    setIsVisible(false);
-    setTimeout(() => router.push('/'), 300);
-  };
+    e.preventDefault()
+    setIsVisible(false)
+    setTimeout(() => router.push('/'), 300)
+  }
 
   if (!showRegister) {
-    return <StartupAnimation onComplete={handleAnimationComplete} />;
+    return <StartupAnimation onComplete={handleAnimationComplete} />
   }
 
   return (
@@ -161,4 +146,3 @@ export default function RegisterScreen() {
     </div>
   )
 }
-

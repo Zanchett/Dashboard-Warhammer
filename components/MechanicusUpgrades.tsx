@@ -167,4 +167,3 @@ const MechanicusUpgrades: React.FC<MechanicusUpgradesProps> = ({ username }) => 
 };
 
 export default MechanicusUpgrades;
-

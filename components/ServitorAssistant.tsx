@@ -1,94 +1,126 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Cog, Send } from 'lucide-react';
+import { useToast } from "@/components/ui/use-toast"
+import { getLibraryContent, LibraryItem } from '@/app/actions/library';
 
 interface Message {
   content: string;
   sender: 'user' | 'servitor';
+  delay?: number;
 }
 
 const ServitorAssistant: React.FC = () => {
-  const [messages, setMessages] = useState<Message[]>([
-    { content: "Greetings, human. I am Servitor Unit XJ-2481. How may I assist you in service to the Omnissiah?", sender: 'servitor' }
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
+  const [libraryContent, setLibraryContent] = useState<LibraryItem[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    setMessages([{ content: "Saudações, humano. Eu sou a Unidade Servitora XJ-2481. Como posso ajudá-lo a serviço do Onissiah?", sender: 'servitor' }]);
+    fetchLibraryContent();
+  }, []);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const handleSend = () => {
-    if (input.trim()) {
-      setMessages([...messages, { content: input, sender: 'user' }]);
-      setInput('');
-      setTimeout(() => {
-        const servitorResponse = getServitorResponse(input);
-        setMessages(prev => [...prev, { content: servitorResponse, sender: 'servitor' }]);
-      }, 1000);
+  const fetchLibraryContent = async () => {
+    try {
+      const content = await getLibraryContent();
+      setLibraryContent(content);
+    } catch (error) {
+      console.error('Error fetching library content:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch library content",
+        variant: "destructive",
+      });
     }
   };
 
-  const getServitorResponse = (userInput: string): string => {
+  const searchLibrary = (query: string): string | null => {
+    const lowerQuery = query.toLowerCase();
+    for (const item of libraryContent) {
+      if (item.type === 'file' && item.content && item.content.toLowerCase().includes(lowerQuery)) {
+        return item.content;
+      }
+    }
+    return null;
+  };
+
+  const getServitorResponse = (userInput: string): Message[] => {
     const lowerInput = userInput.toLowerCase();
-    if (lowerInput.includes('emperor') || lowerInput.includes('imperium')) {
-      return "The Emperor protects. His divine will guides the Imperium of Man across the stars.";
-    } else if (lowerInput.includes('tech') || lowerInput.includes('support')) {
-      return "I can assist with basic cogitator operations. What seems to be malfunctioning?";
-    } else if (lowerInput.includes('mission') || lowerInput.includes('briefing')) {
-      return "Accessing mission data... Error. Clearance level insufficient. Please consult your commanding officer for mission details.";
+    if (lowerInput.includes('imperador') || lowerInput.includes('imperium')) {
+      return [{ content: "O Imperador protege. Sua vontade divina guia o Imperium da Humanidade através das estrelas.", sender: 'servitor' }];
+    } else if (lowerInput.includes('tech') || lowerInput.includes('suporte')) {
+      return [{ content: "Posso ajudar com operações básicas do cogitador. O que parece estar com mau funcionamento?", sender: 'servitor' }];
+    } else if (lowerInput.includes('missão') || lowerInput.includes('briefing')) {
+      return [{ content: "Acessando dados da missão... Erro. Nível de autorização insuficiente. Por favor, consulte seu oficial comandante para detalhes da missão.", sender: 'servitor' }];
     } else {
-      return "Apologies, my knowledge banks do not contain relevant information. Please rephrase your query or consult a Tech-Priest for further assistance.";
+      const libraryResult = searchLibrary(lowerInput);
+      if (libraryResult) {
+        return [
+          { content: "Encontrei esta informação nos registros:", sender: 'servitor', delay: 1000 },
+          { content: libraryResult, sender: 'servitor', delay: 2000 }
+        ];
+      }
+      return [{ content: "Desculpe, meus bancos de conhecimento não contêm informações relevantes. Por favor, reformule sua consulta ou consulte um Tecno-Sacerdote para mais assistência.", sender: 'servitor' }];
+    }
+  };
+
+  const handleSend = () => {
+    if (input.trim()) {
+      setMessages(prev => [...prev, { content: input, sender: 'user' }]);
+      setInput('');
+      const servitorResponses = getServitorResponse(input);
+      servitorResponses.forEach((response, index) => {
+        setTimeout(() => {
+          setMessages(prev => [...prev, response]);
+        }, (response.delay || 1000) * (index + 1));
+      });
     }
   };
 
   return (
-    <div className="servitor-assistant bg-black border border-primary p-4 rounded-lg h-[500px] flex flex-col">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-primary text-xl font-bold">Servitor Assistant XJ-2481</h2>
-        <Cog className="text-primary animate-spin" />
-      </div>
-      <ScrollArea className="flex-grow mb-4 pr-4">
-        <div className="space-y-4">
-          {messages.map((message, index) => (
-            <div
-              key={index}
-              className={`flex ${
-                message.sender === 'user' ? 'justify-end' : 'justify-start'
-              }`}
-            >
-              <div
-                className={`max-w-[80%] p-2 rounded ${
-                  message.sender === 'user'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-secondary text-secondary-foreground'
-                }`}
-              >
-                {message.content}
+    <div className="servitor-assistant">
+      <div className="terminal-outer-frame">
+        <div className="terminal-inner-frame">
+          <div className="terminal-header">
+            <span>SERVITOR ASSISTANT XJ-2481</span>
+            <span>STATUS: ONLINE</span>
+          </div>
+
+          <div className="terminal-content">
+            {messages.map((message, index) => (
+              <div key={index} className={`message ${message.sender}`}>
+                <span className="message-prefix">{message.sender === 'user' ? 'USER>' : 'XJ-2481>'}</span>
+                <span className="message-content">{message.content}</span>
               </div>
+            ))}
+            <div ref={messagesEndRef} />
+          </div>
+
+          <div className="terminal-input-area">
+            <div className="input-line">
+              <span className="input-prefix">&gt;</span>
+              <Input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+                placeholder="Digite sua pergunta..."
+                className="terminal-input"
+              />
             </div>
-          ))}
-          <div ref={messagesEndRef} />
+            <Button onClick={handleSend} className="execute-button">
+              EXECUTE
+            </Button>
+          </div>
         </div>
-      </ScrollArea>
-      <div className="flex space-x-2">
-        <Input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-          placeholder="Enter your query..."
-          className="flex-grow"
-        />
-        <Button onClick={handleSend}>
-          <Send className="w-4 h-4 mr-2" />
-          Send
-        </Button>
       </div>
     </div>
   );
 };
 
 export default ServitorAssistant;
-

@@ -1,55 +1,47 @@
-import { NextResponse } from 'next/server';
-import { Redis } from '@upstash/redis';
+import { NextResponse } from "next/server"
 
-const redis = new Redis({
-  url: process.env.KV_REST_API_URL || '',
-  token: process.env.KV_REST_API_TOKEN || '',
-});
+// In-memory storage for conversation messages in development
+const memoryConversationMessages: { [key: string]: any[] } = {}
 
-export async function GET(
-  request: Request,
-  { params }: { params: { conversationId: string } }
-) {
-  const { conversationId } = params;
-
+export async function GET(request: Request, { params }: { params: { conversationId: string } }) {
   try {
-    const messages = await redis.get(`messages:${conversationId}`) || [];
-    return NextResponse.json(messages);
+    const { conversationId } = params
+    const messages = memoryConversationMessages[conversationId] || []
+    console.log(`[Conversation Messages API] Fetching ${messages.length} messages for conversation:`, conversationId)
+    return NextResponse.json(messages)
   } catch (error) {
-    console.error('Failed to fetch messages:', error);
-    return NextResponse.json({ error: 'Failed to fetch messages' }, { status: 500 });
+    console.error("Error fetching conversation messages:", error)
+    return NextResponse.json({ error: "Failed to fetch messages" }, { status: 500 })
   }
 }
 
-export async function POST(
-  request: Request,
-  { params }: { params: { conversationId: string } }
-) {
-  const { conversationId } = params;
-
+export async function POST(request: Request, { params }: { params: { conversationId: string } }) {
   try {
-    const newMessage = await request.json();
-    let messages = await redis.get(`messages:${conversationId}`) || [];
-    
-    messages = Array.isArray(messages) ? messages : [];
-    messages.push(newMessage);
-    
-    await redis.set(`messages:${conversationId}`, messages);
-    
-    // Update the conversation's last message and unread count
-    const conversations = await redis.get('conversations') || [];
-    const updatedConversations = conversations.map((conv: any) => {
-      if (conv.id === conversationId) {
-        return { ...conv, lastMessage: newMessage.content, unread: (conv.unread || 0) + 1 };
-      }
-      return conv;
-    });
-    await redis.set('conversations', updatedConversations);
+    const { conversationId } = params
+    const { message, username } = await request.json()
 
-    return NextResponse.json(newMessage, { status: 201 });
+    if (!message || !username) {
+      return NextResponse.json({ error: "Message and username are required" }, { status: 400 })
+    }
+
+    if (!memoryConversationMessages[conversationId]) {
+      memoryConversationMessages[conversationId] = []
+    }
+
+    const newMessage = {
+      id: Date.now().toString(),
+      message,
+      username,
+      timestamp: new Date().toISOString(),
+      conversationId,
+    }
+
+    memoryConversationMessages[conversationId].push(newMessage)
+    console.log("[Conversation Messages API] Message added to memory storage:", newMessage.id)
+
+    return NextResponse.json(newMessage)
   } catch (error) {
-    console.error('Failed to send message:', error);
-    return NextResponse.json({ error: 'Failed to send message' }, { status: 500 });
+    console.error("Error saving conversation message:", error)
+    return NextResponse.json({ error: "Failed to save message" }, { status: 500 })
   }
 }
-

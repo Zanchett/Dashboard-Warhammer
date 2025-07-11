@@ -28,4 +28,3 @@ export function FeedMessage({ message, currentUser }: FeedMessageProps) {
     </div>
   );
 }
-

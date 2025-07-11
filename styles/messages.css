@@ -6,6 +6,7 @@
   color: #1aff8c;
   font-family: 'Share Tech Mono', monospace;
   padding: 1rem;
+  animation: flicker 0.15s infinite;
 }
 
 .interface-header {
@@ -59,21 +60,21 @@
 }
 
 .cogitator-input {
-  background-color: rgba(0, 0, 0, 0.7);
-  border: none;
-  border-bottom: 1px solid #1aff8c;
-  color: #1aff8c;
-  font-family: 'Share Tech Mono', monospace;
-  padding: 0.5rem;
+  background-color: rgba(0, 20, 0, 0.7) !important;
+  border: 1px solid #1aff8c !important;
+  color: #1aff8c !important;
+  font-family: 'Share Tech Mono', monospace !important;
+  padding: 0.5rem !important;
 }
 
 .cogitator-input:focus {
-  outline: none;
-  background-color: rgba(26, 255, 140, 0.1);
+  outline: none !important;
+  background-color: rgba(26, 255, 140, 0.1) !important;
+  box-shadow: 0 0 5px rgba(26, 255, 140, 0.3) !important;
 }
 
 .cogitator-input::placeholder {
-  color: rgba(26, 255, 140, 0.5);
+  color: rgba(26, 255, 140, 0.5) !important;
 }
 
 .execute-button {
@@ -188,9 +189,6 @@
 }
 
 /* Add screen flicker animation */
-.cogitator-interface {
-  animation: flicker 0.15s infinite;
-}
 
 @keyframes flicker {
   0% { opacity: 0.99; }
@@ -206,4 +204,3 @@
   color: rgba(26, 255, 140, 0.7);
   font-style: italic;
 }
-

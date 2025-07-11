@@ -157,4 +157,3 @@ const Contacts: React.FC<ContactsProps> = ({ username, onStartConversation }) =>
 }
 
 export default Contacts
-

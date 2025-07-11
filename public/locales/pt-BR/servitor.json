@@ -1,0 +1,10 @@
+{
+  "greeting": "Saudações, humano. Eu sou a Unidade Servitora XJ-2481. Como posso ajudá-lo a serviço do Onissiah?",
+  "emperor": "O Imperador protege. Sua vontade divina guia o Imperium da Humanidade através das estrelas.",
+  "tech_support": "Posso ajudar com operações básicas do cogitador. O que parece estar com mau funcionamento?",
+  "mission": "Acessando dados da missão... Erro. Nível de autorização insuficiente. Por favor, consulte seu oficial comandante para detalhes da missão.",
+  "unknown": "Desculpe, meus bancos de conhecimento não contêm informações relevantes. Por favor, reformule sua consulta ou consulte um Tecno-Sacerdote para mais assistência.",
+  "library_search": "Pesquisando nos arquivos da biblioteca...",
+  "library_result": "Encontrei a seguinte informação nos arquivos:",
+  "library_not_found": "Desculpe, não encontrei informações relevantes nos arquivos da biblioteca."
+}

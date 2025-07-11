@@ -79,4 +79,3 @@ export interface CharacterSheet {
   };
   lastUpdated: string;
 }
-

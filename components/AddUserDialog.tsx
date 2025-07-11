@@ -71,4 +71,3 @@ export function AddUserDialog({ isOpen, onClose, onSubmit }: AddUserDialogProps)
     </div>
   );
 }
-

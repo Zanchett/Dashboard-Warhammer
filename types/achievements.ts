@@ -14,4 +14,3 @@ export interface UserAchievements {
   userId: string;
   earnedSeals: PuritySeal[];
 }
-

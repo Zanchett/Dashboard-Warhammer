@@ -134,9 +134,11 @@ export default function LoginScreen() {
                 <Button type="submit" className="button">
                   LOGIN
                 </Button>
-                <Button type="button" className="button" onClick={handleRegisterClick}>
-                  REGISTER
-                </Button>
+                <Link href="/register" passHref>
+                  <Button type="button" className="button">
+                    REGISTER
+                  </Button>
+                </Link>
               </div>
             </form>
 
@@ -152,4 +154,3 @@ export default function LoginScreen() {
     </div>
   )
 }
-

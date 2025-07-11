@@ -28,4 +28,3 @@ const PuritySealDisplay: React.FC<PuritySealDisplayProps> = ({ seal }) => {
 };
 
 export default PuritySealDisplay;
-

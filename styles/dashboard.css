@@ -96,6 +96,7 @@
   border-bottom: 1px solid var(--border-color);
   background-color: hsla(var(--base-hue), 100%, 50%, 0.1); /* Updated background color */
   padding: 0.5rem;
+  border: 1px solid #1aff8c; /* Updated border */
 }
 
 .terminal-tabs {
@@ -132,9 +133,15 @@
   overflow-y: auto;
   padding: 1rem;
   font-size: 0.9rem;
-  line-height: 1.4;
+  line-height: 1.5; /* Updated line height */
   white-space: pre;
   cursor: default;
+  font-family: 'Share Tech Mono', monospace; /* Updated font family */
+  margin-bottom: 1rem; /* Added margin-bottom */
+  padding: 1rem; /* Added padding */
+  border: 1px solid #1aff8c; /* Added border */
+  background-color: rgba(0, 0, 0, 0.9); /* Updated background color */
+  height: 400px; /* Added height */
 }
 
 .process-list {
@@ -333,10 +340,12 @@
   flex-direction: column;
   width: 100%;
   height: 100%;
-  background-color: var(--color-bg);
-  color: var(--color-text);
+  background-color: #001100; /* Updated background color */
+  color: #1aff8c; /* Updated text color */
   font-family: 'Share Tech Mono', monospace;
   overflow: hidden;
+  padding: 1rem; /* Added padding */
+  border: 1px solid #1aff8c; /* Added border */
 }
 
 .terminal-header {
@@ -346,6 +355,8 @@
   justify-content: space-between;
   align-items: center;
   border-bottom: 1px solid var(--border-color);
+  border: 1px solid #1aff8c; /* Updated border */
+  margin-bottom: 1rem; /* Added margin-bottom */
 }
 
 .attempts-display {
@@ -360,6 +371,13 @@
   line-height: 1.4;
   white-space: pre;
   cursor: default;
+  font-family: 'Share Tech Mono', monospace; /* Updated font family */
+  line-height: 1.5; /* Updated line height */
+  margin-bottom: 1rem; /* Added margin-bottom */
+  padding: 1rem; /* Added padding */
+  border: 1px solid #1aff8c; /* Added border */
+  background-color: rgba(0, 0, 0, 0.9); /* Updated background color */
+  height: 400px; /* Added height */
 }
 
 .selectable-word {
@@ -377,9 +395,31 @@
   background-color: hsla(var(--base-hue), 100%, 50%, 0.1);
   padding: 0.5rem;
   display: flex;
+  flex-direction: column; /* Updated flex-direction */
+  gap: 0.5rem; /* Added gap */
+  border-top: 1px solid var(--border-color);
+  border: 1px solid #1aff8c; /* Updated border */
+  .footer-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem;
+  }
+  .terminal-prompt {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .feedback-display {
+    color: #ff4136;
+    margin-left: 1rem;
+  }
+}
+
+.footer-actions {
+  display: flex;
   justify-content: space-between;
   align-items: center;
-  border-top: 1px solid var(--border-color);
 }
 
 .selected-word {
@@ -417,18 +457,41 @@
 }
 
 .terminal-content::-webkit-scrollbar-track {
-  background: var(--scrollbar-bg);
+  background: rgba(26, 255, 140, 0.1); /* Updated background color */
 }
 
 .terminal-content::-webkit-scrollbar-thumb {
-  background-color: var(--scrollbar-thumb);
+  background-color: rgba(26, 255, 140, 0.3); /* Updated background color */
   border-radius: 4px;
-  border: 2px solid var(--scrollbar-bg);
 }
 
 .terminal-content::-webkit-scrollbar-thumb:hover {
-  background-color: var(--color-primary);
+  background-color: rgba(26, 255, 140, 0.5); /* Updated background color */
 }
+
+.execute-button {
+  background-color: rgba(26, 255, 140, 0.2);
+  border: 1px solid #1aff8c;
+  color: #1aff8c;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.execute-button:hover:not(:disabled) {
+  background-color: rgba(26, 255, 140, 0.3);
+  box-shadow: 0 0 10px rgba(26, 255, 140, 0.5);
+}
+
+.terminal-content .selectable-word {
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.terminal-content .selectable-word:hover {
+  text-shadow: 0 0 5px currentColor;
+}
+
 
 /* Cogitator Core Breach styles */
 .cogitator-core-breach {
@@ -546,3 +609,193 @@
   text-shadow: 0 0 5px currentColor;
 }
 
+.terminal-content .hex-code {
+  color: #1aff8c;
+}
+
+.custom-knob {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.knob-label {
+  margin-top: 0.25rem;
+  font-size: 0.6rem;
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* Metrics Grid and Chart Styles */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  padding: 0.5rem;
+}
+
+.metric-item {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.analysis-container {
+  width: 100%;
+  overflow-x: hidden;
+  padding: 1rem;
+  background-color: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border-color);
+}
+
+.data-analysis {
+  width: 100%;
+  margin: 2rem 0;
+}
+
+/* Notes styles */
+.notes-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  color: var(--color-text);
+}
+
+.notes-header {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.notes-header h2 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.notes-content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.notes-list {
+  width: 300px;
+  border-right: 1px solid var(--border-color);
+  overflow-y: auto;
+}
+
+.note-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.note-title {
+  font-weight: bold;
+}
+
+.note-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.note-editor {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+}
+
+.note-title-input,
+.note-content-input {
+  background-color: rgba(0, 0, 0, 0.7) !important;
+  border: 1px solid #1aff8c !important;
+  color: #1aff8c !important;
+  font-family: 'Share Tech Mono', monospace !important;
+}
+
+.note-title-input {
+  margin-bottom: 1rem;
+}
+
+.note-content-input {
+  flex: 1;
+  margin-bottom: 1rem;
+  resize: none;
+  min-height: 200px;
+}
+
+.note-content-input {
+  flex: 1;
+  margin-bottom: 1rem;
+  resize: none;
+}
+
+.edit-button,
+.delete-button,
+.save-button {
+  font-size: 0.8rem;
+  padding: 0.25rem 0.5rem;
+}
+
+.edit-button {
+  background-color: rgba(26, 255, 140, 0.2);
+}
+
+.delete-button {
+  background-color: rgba(255, 65, 54, 0.2);
+}
+
+.save-button {
+  align-self: flex-start;
+}
+
+.edit-button:hover,
+.delete-button:hover,
+.save-button:hover {
+  background-color: rgba(26, 255, 140, 0.3);
+  box-shadow: 0 0 10px rgba(26, 255, 140, 0.5);
+}
+
+/* Add these styles at the end of the file */
+
+.ship-control {
+  background-color: rgba(0, 0, 0, 0.8);
+  border: 1px solid var(--color-primary);
+  padding: 1rem;
+  color: var(--color-text);
+}
+
+.ship-control h2 {
+  color: var(--color-primary);
+  text-shadow: 0 0 5px var(--color-glow);
+}
+
+.ship-control .toggle {
+  background-color: rgba(26, 255, 140, 0.2);
+  border: 1px solid var(--color-primary);
+}
+
+.ship-control .toggle[data-state="on"] {
+  background-color: var(--color-primary);
+}
+
+.ship-control .progress-bar {
+  background-color: rgba(26, 255, 140, 0.2);
+  border: 1px solid var(--color-primary);
+}
+
+.ship-control .progress-bar-fill {
+  background-color: var(--color-primary);
+}
+
+.ship-control .slider {
+  accent-color: var(--color-primary);
+}
+
+.ship-control label {
+  color: var(--color-text);
+  font-weight: bold;
+}

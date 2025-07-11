@@ -22,4 +22,3 @@ export function awardPuritySeal(userAchievements: UserAchievements, seal: Purity
   }
   return userAchievements;
 }
-

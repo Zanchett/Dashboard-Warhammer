@@ -76,6 +76,26 @@
   border: 1px solid rgba(20, 240, 116, 0.2);
 }
 
+.file-preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  color: #1aff8c;
+  cursor: pointer;
+  padding: 0.25rem;
+  transition: all 0.2s ease;
+}
+
+.close-button:hover {
+  color: #ff4136;
+}
+
 .file-preview h3 {
   margin-bottom: 0.5rem;
   color: #14f074;
@@ -125,3 +145,21 @@
   background-color: rgba(20, 240, 116, 0.5);
 }
 
+.delete-button {
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+  margin-left: 8px;
+  color: #ff4136;
+}
+
+.tree-content:hover .delete-button {
+  opacity: 1;
+}
+
+.delete-button:hover {
+  color: #ff7b6e;
+}

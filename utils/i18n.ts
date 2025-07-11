@@ -26,30 +26,6 @@ const resources = {
         cancel: "Cancel"
       }
     }
-  },
-  'pt-BR': {
-    translation: {
-      system: {
-        title: "Sistema",
-        language: "Idioma"
-      },
-      dashboard: {
-        title: "Painel de Controle",
-        welcome: "Bem-vindo ao Dataslate do Imperium",
-        stats: {
-          title: "Estatísticas",
-          missions: "Missões Concluídas",
-          rank: "Classificação Atual",
-          experience: "Pontos de Experiência"
-        }
-      },
-      common: {
-        loading: "Carregando...",
-        error: "Ocorreu um erro",
-        save: "Salvar",
-        cancel: "Cancelar"
-      }
-    }
   }
 };
 
@@ -66,4 +42,3 @@ i18n
   });
 
 export default i18n;
-

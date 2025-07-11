@@ -58,4 +58,3 @@ const HealthIndicator: React.FC<HealthIndicatorProps> = ({ currentHealth, maxHea
 };
 
 export default HealthIndicator;
-

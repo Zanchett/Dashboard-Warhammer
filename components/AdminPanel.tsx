@@ -7,10 +7,32 @@ import { CharacterSheet } from '@/types/character-sheet';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Folder, File, Plus, Edit, Trash, RefreshCw } from 'lucide-react';
-import { getLibraryContent, addLibraryItem, LibraryItem } from '@/app/actions/library';
+import { getLibraryContent, addLibraryItem, LibraryItem, deleteLibraryItem } from '@/app/actions/library';
+import { Mission } from '@/types/missions';
+import { Trash2 } from 'lucide-react';
+import { Toggle } from "@/components/ui/toggle"
+import { Slider } from "@/components/ui/slider"
+
+
+interface ShipSystem {
+  name: string;
+  status: boolean;
+}
+
+interface MarketItem {
+  id: string;
+  name: string;
+  type: 'weapon' | 'armor' | 'equipment';
+  description: string;
+  price: number;
+  damage?: string;
+  armorClass?: number;
+  quantity?: number;
+  isShown: boolean;
+}
 
 const AdminPanel: React.FC = () => {
   const [users, setUsers] = useState<string[]>([]);
@@ -31,6 +53,35 @@ const AdminPanel: React.FC = () => {
   const [userTechPoints, setUserTechPoints] = useState<number>(0);
   const [techPointsToAdd, setTechPointsToAdd] = useState<number>(0);
   const [editingUpgrade, setEditingUpgrade] = useState<Upgrade | null>(null);
+  const [missions, setMissions] = useState<Mission[]>([]);
+  const [selectedMission, setSelectedMission] = useState<Mission | null>(null);
+  const [missionTitle, setMissionTitle] = useState('');
+  const [missionDescription, setMissionDescription] = useState('');
+  const [missionDifficulty, setMissionDifficulty] = useState<'Easy' | 'Medium' | 'Hard'>('Easy');
+  const [missionReward, setMissionReward] = useState(0);
+  const [missionBriefing, setMissionBriefing] = useState('');
+  const [missionAssignedBy, setMissionAssignedBy] = useState('');
+  const [shipSystems, setShipSystems] = useState<ShipSystem[]>([
+    { name: 'Engines', status: true },
+    { name: 'Weapons', status: false },
+    { name: 'Shields', status: true },
+    { name: 'Life Support', status: true },
+    { name: 'Warp Drive', status: false },
+    { name: 'Auspex Array', status: true },
+    { name: 'Vox-casters', status: true },
+    { name: 'Gellar Field', status: true },
+  ]);
+  const [shipFuel, setShipFuel] = useState(75);
+  const [shipWarpFuel, setShipWarpFuel] = useState(50);
+  const [marketItems, setMarketItems] = useState<MarketItem[]>([]);
+  const [newItem, setNewItem] = useState<MarketItem>({
+    id: '',
+    name: '',
+    type: 'weapon',
+    description: '',
+    price: 0,
+    isShown: true,
+  });
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -48,6 +99,8 @@ const AdminPanel: React.FC = () => {
     fetchUsers();
     fetchLibraryContent();
     fetchUpgradeCategories();
+    fetchMissions();
+    fetchMarketItems();
   }, []);
 
   const getCurrentFolder = () => {
@@ -333,42 +386,287 @@ const AdminPanel: React.FC = () => {
     }
   };
 
+  const fetchMissions = async () => {
+    try {
+      const response = await fetch('/api/missions');
+      if (response.ok) {
+        const data = await response.json();
+        setMissions(data);
+      } else {
+        throw new Error('Failed to fetch missions');
+      }
+    } catch (error) {
+      console.error('Error fetching missions:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch missions",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleCreateMission = async () => {
+    try {
+      const newMission: Omit<Mission, 'id' | 'hexCode'> = {
+        title: missionTitle,
+        description: missionDescription,
+        difficulty: missionDifficulty,
+        reward: missionReward,
+        briefing: missionBriefing,
+        assignedBy: missionAssignedBy,
+        status: 'AVAILABLE', 
+      };
+
+      const response = await fetch('/api/missions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newMission),
+      });
+
+      if (response.ok) {
+        toast({
+          title: "Success",
+          description: "Mission created successfully",
+        });
+        fetchMissions();
+        resetMissionForm();
+      } else {
+        throw new Error('Failed to create mission');
+      }
+    } catch (error) {
+      console.error('Error creating mission:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create mission",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleUpdateMission = async () => {
+    if (!selectedMission) return;
+
+    try {
+      const updatedMission: Mission = {
+        ...selectedMission,
+        title: missionTitle,
+        description: missionDescription,
+        difficulty: missionDifficulty,
+        reward: missionReward,
+        briefing: missionBriefing,
+        assignedBy: missionAssignedBy,
+      };
+
+      const response = await fetch(`/api/missions/${selectedMission.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedMission),
+      });
+
+      if (response.ok) {
+        toast({
+          title: "Success",
+          description: "Mission updated successfully",
+        });
+        fetchMissions();
+        resetMissionForm();
+      } else {
+        throw new Error('Failed to update mission');
+      }
+    } catch (error) {
+      console.error('Error updating mission:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update mission",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteMission = async (id: string) => {
+    try {
+      const response = await fetch(`/api/missions/${id}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        toast({
+          title: "Success",
+          description: "Mission deleted successfully",
+        });
+        fetchMissions();
+        resetMissionForm();
+      } else {
+        throw new Error('Failed to delete mission');
+      }
+    } catch (error) {
+      console.error('Error deleting mission:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete mission",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteLibraryItem = async (id: string) => {
+    try {
+      const success = await deleteLibraryItem(id);
+      if (success) {
+        setLibraryContent(libraryContent.filter((item) => item.id !== id));
+        toast({
+          title: 'Success',
+          description: 'Library item deleted successfully',
+        });
+      } else {
+        throw new Error('Failed to delete library item');
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to delete library item',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const resetMissionForm = () => {
+    setSelectedMission(null);
+    setMissionTitle('');
+    setMissionDescription('');
+    setMissionDifficulty('Easy');
+    setMissionReward(0);
+    setMissionBriefing('');
+    setMissionAssignedBy('');
+  };
+
+  const toggleShipSystem = (index: number) => {
+    const newSystems = [...shipSystems];
+    newSystems[index].status = !newSystems[index].status;
+    setShipSystems(newSystems);
+    // Here you would typically update the backend
+  };
+
+  const fetchMarketItems = async () => {
+    try {
+      const response = await fetch('/api/market/all');
+      if (response.ok) {
+        const data = await response.json();
+        setMarketItems(data);
+      } else {
+        throw new Error('Failed to fetch market items');
+      }
+    } catch (error) {
+      console.error('Error fetching market items:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load market items",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleAddMarketItem = async () => {
+    try {
+      const response = await fetch('/api/market', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newItem),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const addedItem = await response.json();
+      toast({
+        title: "Success",
+        description: "Market item added successfully",
+      });
+      setMarketItems([...marketItems, addedItem]);
+      setNewItem({
+        id: '',
+        name: '',
+        type: 'weapon',
+        description: '',
+        price: 0,
+        isShown: true,
+      });
+    } catch (error) {
+      console.error('Error adding market item:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add market item",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleToggleItemVisibility = async (itemId: string) => {
+    try {
+      const response = await fetch(`/api/market/${itemId}/toggle`, {
+        method: 'PUT',
+      });
+
+      if (response.ok) {
+        fetchMarketItems();
+      } else {
+        throw new Error('Failed to toggle item visibility');
+      }
+    } catch (error) {
+      console.error('Error toggling item visibility:', error);
+      toast({
+        title: "Error",
+        description: "Failed to toggle item visibility",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="admin-panel">
-      <h1 className="text-2xl font-bold mb-4 text-primary">Admin Dashboard</h1>
-      <Tabs defaultValue="users" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="users">Users</TabsTrigger>
-          <TabsTrigger value="library">Library</TabsTrigger>
-          <TabsTrigger value="upgrades">Upgrades</TabsTrigger>
+      <div className="admin-header">
+        <h1 className="admin-title">COGITATOR INTERFACE v2.781</h1>
+        <div className="admin-status">ACCESS LEVEL: MAGOS</div>
+      </div>
+      <Tabs defaultValue="users" className="admin-tabs">
+        <TabsList className="admin-tabs-list">
+          <TabsTrigger value="users" className="admin-tab">USERS</TabsTrigger>
+          <TabsTrigger value="library" className="admin-tab">LIBRARY</TabsTrigger>
+          <TabsTrigger value="upgrades" className="admin-tab">UPGRADES</TabsTrigger>
+          <TabsTrigger value="missions" className="admin-tab">MISSIONS</TabsTrigger>
+          <TabsTrigger value="ship-control" className="admin-tab">SHIP CONTROL</TabsTrigger>
+          <TabsTrigger value="market" className="admin-tab">MARKET</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="users">
+        <TabsContent value="users" className="admin-content">
           <div className="grid grid-cols-4 gap-4">
-            <Card className="col-span-1 bg-background border-primary">
-              <CardHeader>
-                <CardTitle className="text-primary">Users</CardTitle>
-              </CardHeader>
-              <CardContent>
+            <div className="col-span-1 admin-section bg-background border-primary">
+              <div className="admin-section-header">
+                <h2 className="admin-section-title text-primary">Users</h2>
+              </div>
+              <div className="admin-section-content">
                 <div className="space-y-2">
                   {users.map(user => (
                     <Button 
                       key={user} 
                       onClick={() => handleUserSelect(user)} 
                       variant={selectedUser === user ? "default" : "outline"}
-                      className="w-full justify-start text-primary hover:bg-primary hover:text-primary-foreground"
+                      className="admin-button w-full justify-start text-primary hover:bg-primary hover:text-primary-foreground"
                     >
                       {user}
                     </Button>
                   ))}
                 </div>
-              </CardContent>
-            </Card>
-            <Card className="col-span-3 bg-background border-primary">
-              <CardHeader>
-                <CardTitle className="text-primary">{selectedUser ? `User Data: ${selectedUser}` : 'Select a user'}</CardTitle>
-              </CardHeader>
-              <CardContent>
+              </div>
+            </div>
+            <div className="col-span-3 admin-section bg-background border-primary">
+              <div className="admin-section-header">
+                <h2 className="admin-section-title text-primary">{selectedUser ? `User Data: ${selectedUser}` : 'Select a user'}</h2>
+              </div>
+              <div className="admin-section-content">
                 {selectedUser && userData ? (
                   <Tabs defaultValue="balance" className="text-primary">
                     <TabsList className="border-b border-primary">
@@ -385,9 +683,9 @@ const AdminPanel: React.FC = () => {
                             value={newBalance}
                             onChange={(e) => setNewBalance(e.target.value)}
                             placeholder="New Balance"
-                            className="bg-background text-primary border-primary"
+                            className="admin-input bg-background text-primary border-primary"
                           />
-                          <Button onClick={handleBalanceUpdate} className="bg-primary text-primary-foreground hover:bg-primary/80">Update Balance</Button>
+                          <Button onClick={handleBalanceUpdate} className="admin-button bg-primary text-primary-foreground hover:bg-primary/80">Update Balance</Button>
                         </div>
                       </div>
                       <div className="space-y-4 mt-4">
@@ -398,9 +696,9 @@ const AdminPanel: React.FC = () => {
                             value={techPointsToAdd}
                             onChange={(e) => setTechPointsToAdd(Number(e.target.value))}
                             placeholder="Tech points to add/remove"
-                            className="bg-background text-primary border-primary"
+                            className="admin-input bg-background text-primary border-primary"
                           />
-                          <Button onClick={handleTechPointUpdate} className="bg-primary text-primary-foreground hover:bg-primary/80">
+                          <Button onClick={handleTechPointUpdate} className="admin-button bg-primary text-primary-foreground hover:bg-primary/80">
                             Update Tech Points
                           </Button>
                         </div>
@@ -416,7 +714,7 @@ const AdminPanel: React.FC = () => {
                                 type="number"
                                 defaultValue={value.rating}
                                 onChange={(e) => handleAttributeUpdate(attr, Number(e.target.value))}
-                                className="w-20 bg-background text-primary border-primary"
+                                className="admin-input w-20 bg-background text-primary border-primary"
                               />
                             </div>
                           ))}
@@ -444,7 +742,7 @@ const AdminPanel: React.FC = () => {
                                     onClick={() => handleRemoveUpgrade(selectedUser, category, upgrade.name)}
                                     variant="destructive"
                                     size="sm"
-                                    className="ml-2"
+                                    className="admin-button ml-2"
                                   >
                                     <Trash className="w-4 h-4 mr-2" />
                                     Remove
@@ -460,17 +758,17 @@ const AdminPanel: React.FC = () => {
                 ) : (
                   <div className="text-primary">Select a user to view and edit their data</div>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
         </TabsContent>
 
-        <TabsContent value="library">
-          <Card>
-            <CardHeader>
-              <CardTitle>Library Management</CardTitle>
-            </CardHeader>
-            <CardContent>
+        <TabsContent value="library" className="admin-content">
+          <div className="admin-section">
+            <div className="admin-section-header">
+              <h2 className="admin-section-title">Library Management</h2>
+            </div>
+            <div className="admin-section-content">
               <div className="mb-4">
                 <h3 className="text-lg font-semibold mb-2">Current Path: /{currentPath.join('/')}</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -486,15 +784,27 @@ const AdminPanel: React.FC = () => {
                   {getCurrentFolder().map((item) => (
                     <div
                       key={item.id}
-                      className="flex items-center p-2 border rounded cursor-pointer hover:bg-primary hover:bg-opacity-10"
-                      onClick={() => item.type === 'folder' && handleLibraryNavigation(item.name)}
+                      className="flex items-center justify-between p-2 border rounded cursor-pointer hover:bg-primary hover:bg-opacity-10"
                     >
-                      {item.type === 'folder' ? (
-                        <Folder className="w-6 h-6 mr-2" />
-                      ) : (
-                        <File className="w-6 h-6 mr-2" />
-                      )}
-                      <span>{item.name}</span>
+                      <div
+                        className="flex items-center flex-grow"
+                        onClick={() => item.type === 'folder' && handleLibraryNavigation(item.name)}
+                      >
+                        {item.type === 'folder' ? (
+                          <Folder className="w-6 h-6 mr-2" />
+                        ) : (
+                          <File className="w-6 h-6 mr-2" />
+                        )}
+                        <span>{item.name}</span>
+                      </div>
+                      <Button
+                        onClick={() => handleDeleteLibraryItem(item.id)}
+                        variant="destructive"
+                        size="sm"
+                        className="ml-2"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
                     </div>
                   ))}
                 </div>
@@ -504,9 +814,10 @@ const AdminPanel: React.FC = () => {
                   placeholder="New item name"
                   value={newItemName}
                   onChange={(e) => setNewItemName(e.target.value)}
+                  className="admin-input"
                 />
                 <select
-                  className="w-full p-2 border rounded"
+                  className="w-full p-2 border rounded admin-input"
                   value={newItemType}
                   onChange={(e) => setNewItemType(e.target.value as 'folder' | 'file')}
                 >
@@ -515,33 +826,34 @@ const AdminPanel: React.FC = () => {
                 </select>
                 {newItemType === 'file' && (
                   <textarea
-                    className="w-full p-2 border rounded"
+                    className="w-full p-2 border rounded admin-input min-h-[200px]"
                     placeholder="File content"
                     value={newItemContent}
                     onChange={(e) => setNewItemContent(e.target.value)}
+                    rows={10}
                   />
                 )}
-                <Button onClick={handleAddItem}>
+                <Button onClick={handleAddItem} className="admin-button">
                   <Plus className="w-4 h-4 mr-2" />
                   Add {newItemType === 'folder' ? 'Folder' : 'File'}
                 </Button>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </TabsContent>
 
-        <TabsContent value="upgrades">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex justify-between items-center">
-                <span>Upgrade Management</span>
-                <Button onClick={handleCleanUpgradesDatabase} variant="destructive">
+        <TabsContent value="upgrades" className="admin-content">
+          <div className="admin-section">
+            <div className="admin-section-header">
+              <div className="flex justify-between items-center">
+                <h2 className="admin-section-title">Upgrade Management</h2>
+                <Button onClick={handleCleanUpgradesDatabase} variant="destructive" className="admin-button">
                   <RefreshCw className="w-4 h-4 mr-2" />
                   Clean Upgrades Database
                 </Button>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
+              </div>
+            </div>
+            <div className="admin-section-content">
               <div className="space-y-4">
                 <div>
                   <h3 className="text-lg font-semibold mb-2">Add New Category</h3>
@@ -550,14 +862,15 @@ const AdminPanel: React.FC = () => {
                       placeholder="New category name"
                       value={newCategory}
                       onChange={(e) => setNewCategory(e.target.value)}
+                      className="admin-input"
                     />
-                    <Button onClick={handleAddCategory}>Add Category</Button>
+                    <Button onClick={handleAddCategory} className="admin-button">Add Category</Button>
                   </div>
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold mb-2">Manage Upgrades</h3>
                   <select
-                    className="w-full p-2 border rounded mb-2"
+                    className="w-full p-2 border rounded admin-input mb-2"
                     value={selectedCategory || ''}
                     onChange={(e) => handleCategorySelect(e.target.value)}
                   >
@@ -572,6 +885,7 @@ const AdminPanel: React.FC = () => {
                         placeholder="New upgrade name"
                         value={newUpgrade.name}
                         onChange={(e) => setNewUpgrade({ ...newUpgrade, name: e.target.value })}
+                        className="admin-input"
                       />
                       <div className="flex space-x-2">
                         <Input
@@ -587,6 +901,7 @@ const AdminPanel: React.FC = () => {
                               }
                             });
                           }}
+                          className="admin-input"
                         />
                         <Input
                           type="number"
@@ -601,6 +916,7 @@ const AdminPanel: React.FC = () => {
                               }
                             });
                           }}
+                          className="admin-input"
                         />
                       </div>
                       <Input
@@ -608,8 +924,9 @@ const AdminPanel: React.FC = () => {
                         placeholder="Tech Point Cost"
                         value={newUpgrade.techPointCost || ''}
                         onChange={(e) => setNewUpgrade({ ...newUpgrade, techPointCost: Number(e.target.value) })}
+                        className="admin-input"
                       />
-                      <Button onClick={handleAddUpgrade}>Add Upgrade</Button>
+                      <Button onClick={handleAddUpgrade} className="admin-button">Add Upgrade</Button>
                     </div>
                   )}
                 </div>
@@ -618,22 +935,23 @@ const AdminPanel: React.FC = () => {
                   {categoryUpgrades.map((upgrade, index) => (
                     <div key={`${selectedCategory}-${upgrade.name}-${index}`} className="flex items-center justify-between border-b py-2">
                       <span>
+<span>
                         {upgrade.name} - 
                         {Object.entries(upgrade.attributes).map(([attr, value]) => `${attr}: ${value}`).join(', ')} - 
                         Cost: {upgrade.techPointCost} TP
                       </span>
                       <div>
                         {selectedUser && (
-                          <Button onClick={() => handleAssignUpgrade(upgrade.name)} className="mr-2">
+                          <Button onClick={() => handleAssignUpgrade(upgrade.name)} className="admin-button mr-2">
                             Assign to {selectedUser}
                           </Button>
                         )}
-                        <Button onClick={() => setEditingUpgrade(upgrade)} className="mr-2">
+                        <Button onClick={() => setEditingUpgrade(upgrade)} className="admin-button mr-2">
                           <Edit className="w-4 h-4 mr-2" />
                           Edit
                         </Button>
                         {selectedUser && (
-                          <Button onClick={() => handleRemoveUpgrade(selectedUser, selectedCategory!, upgrade.name)} variant="destructive">
+                          <Button onClick={() => handleRemoveUpgrade(selectedUser, selectedCategory!, upgrade.name)} variant="destructive" className="admin-button">
                             <Trash className="w-4 h-4 mr-2" />
                             Remove
                           </Button>
@@ -649,7 +967,7 @@ const AdminPanel: React.FC = () => {
                       placeholder="Upgrade name"
                       value={editingUpgrade.name}
                       onChange={(e) => setEditingUpgrade({ ...editingUpgrade, name: e.target.value })}
-                      className="mb-2"
+                      className="admin-input mb-2"
                     />
                     {Object.entries(editingUpgrade.attributes).map(([attr, value]) => (
                       <div key={attr} className="flex space-x-2 mb-2">
@@ -662,6 +980,7 @@ const AdminPanel: React.FC = () => {
                             newAttributes[e.target.value] = value;
                             setEditingUpgrade({ ...editingUpgrade, attributes: newAttributes });
                           }}
+                          className="admin-input"
                         />
                         <Input
                           type="number"
@@ -671,6 +990,7 @@ const AdminPanel: React.FC = () => {
                             ...editingUpgrade,
                             attributes: { ...editingUpgrade.attributes, [attr]: Number(e.target.value) }
                           })}
+                          className="admin-input"
                         />
                       </div>
                     ))}
@@ -679,19 +999,223 @@ const AdminPanel: React.FC = () => {
                       placeholder="Tech Point Cost"
                       value={editingUpgrade.techPointCost}
                       onChange={(e) => setEditingUpgrade({ ...editingUpgrade, techPointCost: Number(e.target.value) })}
-                      className="mb-2"
+                      className="admin-input mb-2"
                     />
-                    <Button onClick={() => handleEditUpgrade(selectedCategory!, editingUpgrade.name)}>
+                    <Button onClick={() => handleEditUpgrade(selectedCategory!, editingUpgrade.name)} className="admin-button">
                       Save Changes
                     </Button>
-                    <Button onClick={() => setEditingUpgrade(null)} variant="outline" className="ml-2">
+                    <Button onClick={() => setEditingUpgrade(null)} variant="outline" className="admin-button ml-2">
                       Cancel
                     </Button>
                   </div>
                 )}
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="missions" className="admin-content">
+          <div className="admin-missions">
+            <div className="mission-form">
+              <h3 className="section-title">CREATE/EDIT MISSION</h3>
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                selectedMission ? handleUpdateMission() : handleCreateMission();
+              }}>
+                <Input
+                  placeholder="MISSION TITLE"
+                  value={missionTitle}
+                  onChange={(e) => setMissionTitle(e.target.value)}
+                  className="admin-input"
+                />
+                <Input
+                  placeholder="DESCRIPTION"
+                  value={missionDescription}
+                  onChange={(e) => setMissionDescription(e.target.value)}
+                  className="admin-input"
+                />
+                <select
+                  value={missionDifficulty}
+                  onChange={(e) => setMissionDifficulty(e.target.value as 'Easy' | 'Medium' | 'Hard')}
+                  className="admin-select admin-input"
+                >
+                  <option value="Easy">EASY</option>
+                  <option value="Medium">MEDIUM</option>
+                  <option value="Hard">HARD</option>
+                </select>
+                <Input
+                  type="number"
+                  placeholder="REWARD"
+                  value={missionReward}
+                  onChange={(e) => setMissionReward(Number(e.target.value))}
+                  className="admin-input"
+                />
+                <textarea
+                  placeholder="BRIEFING"
+                  value={missionBriefing}
+                  onChange={(e) => setMissionBriefing(e.target.value)}
+                  className="admin-textarea admin-input"
+                  rows={4}
+                />
+                <Input
+                  placeholder="ASSIGNED BY"
+                  value={missionAssignedBy}
+                  onChange={(e) => setMissionAssignedBy(e.target.value)}
+                  className="admin-input"
+                />
+                <Button type="submit" className="admin-button">
+                  {selectedMission ? 'UPDATE_MISSION' : 'CREATE_MISSION'}
+                </Button>
+              </form>
+            </div>
+            <div className="mission-list">
+              <h3 className="section-title">MISSION DATABASE</h3>
+              <ScrollArea className="admin-scrollarea">
+                {missions.map((mission) => (
+                  <div key={mission.id} className="mission-entry">
+                    <div className="mission-header">
+                      <span className="mission-hexcode">0x{mission.id.toString(16).padStart(4, '0').toUpperCase()}</span>
+                      <span className="mission-title">{mission.title}</span>
+                    </div>
+                    <div className="mission-actions">
+                      <Button 
+                        onClick={() => {
+                          setSelectedMission(mission);
+                          setMissionTitle(mission.title);
+                          setMissionDescription(mission.description);
+                          setMissionDifficulty(mission.difficulty);
+                          setMissionReward(mission.reward);
+                          setMissionBriefing(mission.briefing);
+                          setMissionAssignedBy(mission.assignedBy);
+                        }}
+                        className="admin-button"
+                      >
+                        EDIT
+                      </Button>
+                      <Button 
+                        onClick={() => handleDeleteMission(mission.id)}
+                        className="admin-button delete"
+                      >
+                        DELETE
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </ScrollArea>
+            </div>
+          </div>
+        </TabsContent>
+        <TabsContent value="ship-control" className="admin-content">
+          <div className="admin-section">
+            <div className="admin-section-header">
+              <h2 className="admin-section-title">Ship Systems Control</h2>
+            </div>
+            <div className="admin-section-content">
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                {shipSystems.map((system, index) => (
+                  <div key={system.name} className="flex items-center justify-between">
+                    <span>{system.name}</span>
+                    <Toggle
+                      pressed={system.status}
+                      onPressedChange={() => toggleShipSystem(index)}
+                      aria-label={`Toggle ${system.name}`}
+                    >
+                      {system.status ? 'Online' : 'Offline'}
+                    </Toggle>
+                  </div>
+                ))}
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="block mb-2">Promethium Fuel Reserves</label>
+                  <Slider
+                    value={[shipFuel]}
+                    onValueChange={(values) => setShipFuel(values[0])}
+                    max={100}
+                    step={1}
+                  />
+                  <span>{shipFuel}%</span>
+                </div>
+                <div>
+                  <label className="block mb-2">Warp Fuel Reserves</label>
+                  <Slider
+                    value={[shipWarpFuel]}
+                    onValueChange={(values) => setShipWarpFuel(values[0])}
+                    max={100}
+                    step={1}
+                  />
+                  <span>{shipWarpFuel}%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </TabsContent>
+        <TabsContent value="market" className="admin-content">
+          <div className="admin-section">
+            <h2 className="admin-section-title">Market Management</h2>
+            <div className="market-item-form">
+              <Input
+                placeholder="Item Name"
+                value={newItem.name}
+                onChange={(e) => setNewItem({ ...newItem, name: e.target.value })}
+              />
+              <select
+                value={newItem.type}
+                onChange={(e) => setNewItem({ ...newItem, type: e.target.value as 'weapon' | 'armor' | 'equipment' })}
+              >
+                <option value="weapon">Weapon</option>
+                <option value="armor">Armor</option>
+                <option value="equipment">Equipment</option>
+              </select>
+              <Input
+                placeholder="Description"
+                value={newItem.description}
+                onChange={(e) => setNewItem({ ...newItem, description: e.target.value })}
+              />
+              <Input
+                type="number"
+                placeholder="Price"
+                value={newItem.price}
+                onChange={(e) => setNewItem({ ...newItem, price: Number(e.target.value) })}
+              />
+              {newItem.type === 'weapon' && (
+                <Input
+                  placeholder="Damage (e.g., 1d20)"
+                  value={newItem.damage || ''}
+                  onChange={(e) => setNewItem({ ...newItem, damage: e.target.value })}
+                />
+              )}
+              {newItem.type === 'armor' && (
+                <Input
+                  type="number"
+                  placeholder="Armor Class"
+                  value={newItem.armorClass || ''}
+                  onChange={(e) => setNewItem({ ...newItem, armorClass: Number(e.target.value) })}
+                />
+              )}
+              {newItem.type === 'equipment' && (
+                <Input
+                  type="number"
+                  placeholder="Quantity"
+                  value={newItem.quantity || ''}
+                  onChange={(e) => setNewItem({ ...newItem, quantity: Number(e.target.value) })}
+                />
+              )}
+              <Button onClick={handleAddMarketItem}>Add Item</Button>
+            </div>
+            <div className="market-items-list">
+              {marketItems.map((item) => (
+                <div key={item.id} className="market-item">
+                  <span>{item.name}</span>
+                  <span>{item.type}</span>
+                  <span>{item.price} credits</span>
+                  <Button onClick={() => handleToggleItemVisibility(item.id)}>
+                    {item.isShown ? 'Hide' : 'Show'}
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
         </TabsContent>
       </Tabs>
     </div>
@@ -699,4 +1223,3 @@ const AdminPanel: React.FC = () => {
 };
 
 export default AdminPanel;
-

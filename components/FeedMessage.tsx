@@ -1,22 +1,30 @@
-import type React from "react"
+import React from 'react';
 
 interface FeedMessageProps {
-  sender: string
-  content: string
-  timestamp: string
-  isUser: boolean
+  message: {
+    content: string;
+    author: string;
+    timestamp: string;
+  };
+  currentUser: string;
 }
 
-const FeedMessage: React.FC<FeedMessageProps> = ({ sender, content, timestamp, isUser }) => {
+export function FeedMessage({ message, currentUser }: FeedMessageProps) {
+  const isSentByCurrentUser = message.author === currentUser;
+
   return (
-    <div className={`feed-message ${isUser ? "user-message" : "ai-message"}`}>
-      <div className="message-header">
-        <span className="message-sender">{sender}</span>
-        <span className="message-timestamp">{timestamp}</span>
+    <div className={`message ${isSentByCurrentUser ? 'message--sent' : 'message--received'}`}>
+      <div className="message__header">
+        <span className="message__author">{message.author}</span>
       </div>
-      <div className="message-content">{content}</div>
+      <div className="message__body">
+        <div>{message.content}</div>
+      </div>
+      <div className="message__footer">
+        <span className="message__timestamp">
+          {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+        </span>
+      </div>
     </div>
-  )
+  );
 }
-
-export default FeedMessage

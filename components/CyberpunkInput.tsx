@@ -1,23 +1,39 @@
-import * as React from "react"
+import React, { useState } from 'react';
+import { IconFeedAdd } from './icons';
 
-import { cn } from "@/lib/utils"
+interface CyberpunkInputProps {
+  onSubmit: (value: string) => void;
+  placeholder?: string;
+}
 
-export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {}
+export const CyberpunkInput: React.FC<CyberpunkInputProps> = ({ onSubmit, placeholder = "Enter Empire ID" }) => {
+  const [inputValue, setInputValue] = useState('');
+  const [isActive, setIsActive] = useState(false);
 
-const CyberpunkInput = React.forwardRef<HTMLInputElement, InputProps>(({ className, type, ...props }, ref) => {
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (inputValue.trim()) {
+      onSubmit(inputValue.trim());
+      setInputValue('');
+    }
+  };
+
   return (
-    <input
-      type={type}
-      className={cn(
-        "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
-        "bg-input border-primary text-primary placeholder:text-secondary-color shadow-sm shadow-primary/50", // Cyberpunk specific styles
-        className,
-      )}
-      ref={ref}
-      {...props}
-    />
-  )
-})
-CyberpunkInput.displayName = "CyberpunkInput"
-
-export { CyberpunkInput }
+    <form onSubmit={handleSubmit} className="cyberpunk-input-container">
+      <div className={`cyberpunk-input ${isActive ? 'active' : ''}`}>
+        <input
+          type="text"
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          onFocus={() => setIsActive(true)}
+          onBlur={() => setIsActive(false)}
+          placeholder={placeholder}
+          className="cyberpunk-input__field"
+        />
+        <button type="submit" className="cyberpunk-input__button">
+          <IconFeedAdd className="cyberpunk-input__icon" />
+        </button>
+      </div>
+    </form>
+  );
+};

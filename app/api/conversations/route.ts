@@ -1,85 +1,88 @@
 import { NextResponse } from "next/server"
 import { Redis } from "@upstash/redis"
+import { findUser } from "@/lib/users"
 
-// Initialize Redis client
-let redis: Redis | null = null
-let isRedisAvailable = false
-let storageType: "redis" | "memory" = "memory"
+const redis = new Redis({
+  url: process.env.KV_REST_API_URL,
+  token: process.env.KV_REST_API_TOKEN,
+})
 
-// In-memory storage for development/fallback
-let inMemoryConversations: any[] = [] // Store conversations in memory
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url)
+  const username = searchParams.get("username")
 
-function initializeRedis() {
-  if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
-    try {
-      redis = new Redis({
-        url: process.env.KV_REST_API_URL,
-        token: process.env.KV_REST_API_TOKEN,
+  if (!username) {
+    return NextResponse.json({ error: "Username is required" }, { status: 400 })
+  }
+
+  try {
+    const userConversations = await redis.lrange(`user:${username}:conversations`, 0, -1)
+    const conversations = userConversations
+      .map((conv) => {
+        try {
+          return typeof conv === "string" ? JSON.parse(conv) : conv
+        } catch (error) {
+          console.error("Error parsing conversation:", error)
+          return null
+        }
       })
-      isRedisAvailable = true
-      storageType = "redis"
-      console.log("[Redis] Conversations Redis client initialized successfully.")
-    } catch (error) {
-      console.error("[Redis] Failed to initialize Conversations Redis client:", error)
-      isRedisAvailable = false
-      storageType = "memory"
-    }
-  } else {
-    console.warn("[Redis] KV_REST_API_URL or KV_REST_API_TOKEN not set for conversations. Using in-memory storage.")
-    isRedisAvailable = false
-    storageType = "memory"
-  }
-}
-
-initializeRedis()
-
-async function getConversationsFromStore(): Promise<any[]> {
-  if (storageType === "memory") {
-    return inMemoryConversations
-  }
-  if (!redis) return []
-  try {
-    const conversationsJson = await redis.get<string>("conversations")
-    return conversationsJson ? JSON.parse(conversationsJson) : []
-  } catch (error) {
-    console.error("Error reading conversations from Redis:", error)
-    return []
-  }
-}
-
-async function setConversationsInStore(conversations: any[]): Promise<void> {
-  if (storageType === "memory") {
-    inMemoryConversations = conversations
-    return
-  }
-  if (!redis) return
-  try {
-    await redis.set("conversations", JSON.stringify(conversations))
-  } catch (error) {
-    console.error("Error writing conversations to Redis:", error)
-  }
-}
-
-export async function GET() {
-  try {
-    const conversations = await getConversationsFromStore()
+      .filter((conv) => conv !== null)
     return NextResponse.json(conversations)
   } catch (error) {
-    console.error("Error in GET /api/conversations:", error)
-    return NextResponse.json({ message: "Failed to fetch conversations" }, { status: 500 })
+    console.error("Failed to fetch conversations:", error)
+    return NextResponse.json({ error: "Failed to fetch conversations" }, { status: 500 })
   }
 }
 
 export async function POST(request: Request) {
   try {
-    const { participant1, participant2 } = await request.json()
-    const newConversation = { id: Date.now().toString(), participant1, participant2, messages: [] }
-    const conversations = await getConversationsFromStore()
-    conversations.push(newConversation)
-    await setConversationsInStore(conversations)
+    const { userId, currentUser } = await request.json()
+
+    if (!userId || !currentUser) {
+      return NextResponse.json({ error: "User ID and current user are required" }, { status: 400 })
+    }
+
+    const user = await findUser(userId)
+
+    if (!user) {
+      return NextResponse.json({ error: "No user found with this Empire ID" }, { status: 404 })
+    }
+
+    // Check if conversation already exists for either user
+    const currentUserConversations = await redis.lrange(`user:${currentUser}:conversations`, 0, -1)
+    const targetUserConversations = await redis.lrange(`user:${userId}:conversations`, 0, -1)
+
+    const currentUserHasConversation = currentUserConversations.some((conv) => {
+      const parsed = typeof conv === "string" ? JSON.parse(conv) : conv
+      return parsed.name === userId
+    })
+
+    const targetUserHasConversation = targetUserConversations.some((conv) => {
+      const parsed = typeof conv === "string" ? JSON.parse(conv) : conv
+      return parsed.name === currentUser
+    })
+
+    if (currentUserHasConversation || targetUserHasConversation) {
+      return NextResponse.json({ error: "Conversation already exists with this user" }, { status: 400 })
+    }
+
+    // Create a unique conversation ID
+    const conversationId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+
+    const newConversation = {
+      id: conversationId,
+      name: userId,
+      isOnline: false,
+      unread: 0,
+    }
+
+    // Add conversation to both users
+    await redis.rpush(`user:${currentUser}:conversations`, JSON.stringify(newConversation))
+    await redis.rpush(`user:${userId}:conversations`, JSON.stringify({ ...newConversation, name: currentUser }))
+
     return NextResponse.json(newConversation, { status: 201 })
   } catch (error) {
-    console.error("Error in POST /api/conversations:", error)
-    return NextResponse.json({ message: "Failed to create conversation" }, { status: 500 })
+    console.error("Failed to add user:", error)
+    return NextResponse.json({ error: "Failed to add user" }, { status: 500 })
   }
 }

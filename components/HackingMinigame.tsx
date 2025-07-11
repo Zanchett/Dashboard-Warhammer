@@ -1,167 +1,136 @@
-import React, { useState, useEffect, useCallback } from 'react';
+"use client"
+
+import { Label } from "@/components/ui/label"
+
+import type React from "react"
+import { useState, useEffect, useCallback } from "react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Progress } from "@/components/ui/progress"
+import { useToast } from "@/hooks/use-toast"
+import { Icons } from "./icons"
 
 interface HackingMinigameProps {
-  onSuccess: () => void;
-  onFailure: () => void;
+  onHackSuccess: () => void
+  onHackFail: () => void
 }
 
-const HackingMinigame: React.FC<HackingMinigameProps> = ({ onSuccess, onFailure }) => {
-  const [words, setWords] = useState<string[]>([]);
-  const [password, setPassword] = useState<string>('');
-  const [attempts, setAttempts] = useState<number>(4);
-  const [selectedWord, setSelectedWord] = useState<string | null>(null);
-  const [feedback, setFeedback] = useState<string>('');
-  const [terminalContent, setTerminalContent] = useState<string>('');
+const SEQUENCES = [
+  ["ALPHA", "BETA", "GAMMA"],
+  ["0101", "1010", "1100"],
+  ["FIREWALL", "BREACH", "ACCESS"],
+  ["VOID", "SHIELD", "OVERLOAD"],
+]
 
-  const warhammer40kWords = [
-    'PSYKER', 'OMNISSIAH', 'XENOS', 'HERETIC', 'EMPEROR',
-    'ADEPTUS', 'MECHANICUS', 'GELLAR', 'CERAMITE', 'FERROCRETE',
-    'PLASTEEL', 'ADAMANTIUM', 'LASGUN', 'THUNDERHAWK', 'TECHPRIEST'
-  ];
+const HackingMinigame: React.FC<HackingMinigameProps> = ({ onHackSuccess, onHackFail }) => {
+  const [currentSequence, setCurrentSequence] = useState<string[]>([])
+  const [input, setInput] = useState("")
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [timer, setTimer] = useState(15) // 15 seconds for the minigame
+  const [isActive, setIsActive] = useState(false)
+  const [message, setMessage] = useState("")
+  const { toast } = useToast()
 
-  const technicalTerms = [
-    'BUFFER OVERFLOW', 'NULL POINTER', 'SEGMENTATION FAULT',
-    'CORE DUMPED', 'MEMORY LEAK', 'STACK TRACE', 'WARP BREACH'
-  ];
-
-  const generateRandomWords = useCallback(() => {
-    return getRandomWords(warhammer40kWords, 15);
-  }, []);
+  const startGame = useCallback(() => {
+    const randomIndex = Math.floor(Math.random() * SEQUENCES.length)
+    setCurrentSequence(SEQUENCES[randomIndex])
+    setInput("")
+    setCurrentIndex(0)
+    setTimer(15)
+    setIsActive(true)
+    setMessage("Initiating hack... Enter the sequence!")
+    toast({
+      title: "Hacking Minigame Started",
+      description: "Enter the sequence correctly before time runs out!",
+    })
+  }, [])
 
   useEffect(() => {
-    const gameWords = generateRandomWords();
-    setWords(gameWords);
-    setPassword(gameWords[Math.floor(Math.random() * gameWords.length)]);
-    setAttempts(4);
-    setSelectedWord(null);
-    setFeedback('');
-    generateTerminalContent(gameWords);
-  }, [generateRandomWords]);
-
-  const getRandomWords = (wordList: string[], count: number): string[] => {
-    const shuffled = [...wordList].sort(() => 0.5 - Math.random());
-    return shuffled.slice(0, count);
-  };
-
-  const generateTerminalContent = (gameWords: string[]) => {
-    let content = '';
-    const availableWords = [...gameWords];
-    for (let i = 0; i < 12; i++) {
-      const lineAddress = (i * 12).toString(16).padStart(4, '0').toUpperCase();
-      content += `0x${lineAddress} `;
-
-      const terms = [];
-      for (let j = 0; j < 4; j++) {
-        if (availableWords.length > 0 && Math.random() < 0.3) {
-          const index = Math.floor(Math.random() * availableWords.length);
-          terms.push(availableWords.splice(index, 1)[0]);
-        } else {
-          terms.push(
-            Math.random() > 0.5
-              ? warhammer40kWords[Math.floor(Math.random() * warhammer40kWords.length)]
-              : technicalTerms[Math.floor(Math.random() * technicalTerms.length)]
-          );
-        }
-      }
-
-      content += terms.join(' ') + '\n';
+    let interval: NodeJS.Timeout | null = null
+    if (isActive && timer > 0) {
+      interval = setInterval(() => {
+        setTimer((prevTimer) => prevTimer - 1)
+      }, 1000)
+    } else if (isActive && timer === 0) {
+      setIsActive(false)
+      setMessage("Hack failed: Time expired!")
+      toast({
+        title: "Hack Failed",
+        description: "You ran out of time!",
+        variant: "destructive",
+      })
+      onHackFail()
     }
-    setTerminalContent(content);
-  };
+    return () => {
+      if (interval) clearInterval(interval)
+    }
+  }, [isActive, timer, onHackFail, toast])
 
-  const handleWordSelect = (word: string) => {
-    setSelectedWord(word);
-  };
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!isActive) return
+    const value = e.target.value.toUpperCase()
+    setInput(value)
 
-  const handleGuess = () => {
-    if (!selectedWord) return;
-
-    if (selectedWord === password) {
-      setFeedback('Access granted. System compromised.');
-      setTimeout(() => {
-        onSuccess();
-        // Reset the game with new words
-        const newWords = generateRandomWords();
-        setWords(newWords);
-        setPassword(newWords[Math.floor(Math.random() * newWords.length)]);
-        setAttempts(4);
-        setSelectedWord(null);
-        setFeedback('');
-        generateTerminalContent(newWords);
-      }, 2000);
+    if (value === currentSequence[currentIndex]) {
+      if (currentIndex === currentSequence.length - 1) {
+        setIsActive(false)
+        setMessage("Hack successful! Access granted.")
+        toast({
+          title: "Hack Successful",
+          description: "You have successfully breached the system!",
+        })
+        onHackSuccess()
+      } else {
+        setMessage("Correct! Next word...")
+        setCurrentIndex((prev) => prev + 1)
+        setInput("")
+      }
+    } else if (currentSequence[currentIndex].startsWith(value) && value.length > 0) {
+      setMessage("Keep going...")
+    } else if (value.length > 0) {
+      setMessage("Incorrect entry. Try again.")
     } else {
-      const matchingChars = getMatchingCharacters(selectedWord, password);
-      setFeedback(`Access denied. ${matchingChars}/${password.length} correct.`);
-      setAttempts(attempts - 1);
-
-      if (attempts - 1 === 0) {
-        setFeedback('Maximum attempts reached. Lockout initiated.');
-        setTimeout(() => {
-          onFailure();
-          // Reset the game with new words
-          const newWords = generateRandomWords();
-          setWords(newWords);
-          setPassword(newWords[Math.floor(Math.random() * newWords.length)]);
-          setAttempts(4);
-          setSelectedWord(null);
-          setFeedback('');
-          generateTerminalContent(newWords);
-        }, 2000);
-      }
+      setMessage("")
     }
-  };
+  }
 
-  const getMatchingCharacters = (word1: string, word2: string): number => {
-    return word1.split('').filter((char, index) => char === word2[index]).length;
-  };
-
-  const renderTerminalContent = () => {
-    return terminalContent.split('\n').map((line, index) => (
-      <div key={index}>
-        {line.split(' ').map((word, wordIndex) => {
-          if (words.includes(word)) {
-            return (
-              <span
-                key={wordIndex}
-                className="selectable-word"
-                onClick={() => handleWordSelect(word)}
-              >
-                {word}{' '}
-              </span>
-            );
-          }
-          return <span key={wordIndex} className="hex-code">{word} </span>;
-        })}
-      </div>
-    ));
-  };
+  const progressValue = (timer / 15) * 100
 
   return (
-    <div className="hacking-minigame">
-      <div className="terminal-header">
-        <span>COGITATOR INTERFACE v2.781</span>
-        <span>ATTEMPTS REMAINING: {attempts}</span>
+    <div className="panel-cyberpunk p-6 flex flex-col items-center gap-6">
+      <h3 className="text-neon text-xl">Hacking Minigame</h3>
+      <div className="w-full">
+        <Label htmlFor="timer-progress" className="text-neon mb-2 block">
+          Time Remaining: {timer}s
+        </Label>
+        <Progress value={progressValue} className="w-full" />
       </div>
-      <div className="terminal-content" style={{ height: '300px', overflowY: 'auto' }}>
-        {renderTerminalContent()}
-      </div>
-      <div className="terminal-footer">
-        <div className="footer-content">
-          <div className="terminal-prompt">
-            SELECTED: {selectedWord || 'NONE'}
-            {feedback && <span className="feedback-display">{feedback}</span>}
-          </div>
-          <button
-            className="execute-button"
-            onClick={handleGuess}
-            disabled={!selectedWord}
-          >
-            EXECUTE OVERRIDE
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
 
-export default HackingMinigame;
+      {isActive && (
+        <>
+          <div className="text-center text-neon text-3xl font-bold tracking-widest">
+            {currentSequence[currentIndex]}
+          </div>
+          <Input
+            type="text"
+            value={input}
+            onChange={handleInputChange}
+            placeholder="Enter sequence here..."
+            className="input-cyberpunk w-full max-w-md text-center text-xl"
+            disabled={!isActive}
+            autoFocus
+          />
+          <p className="text-sm text-center text-neon">{message}</p>
+        </>
+      )}
+
+      {!isActive && (
+        <Button onClick={startGame} className="btn-cyberpunk text-lg px-8 py-3">
+          <Icons.play className="mr-2 h-5 w-5" /> Start Hack
+        </Button>
+      )}
+    </div>
+  )
+}
+
+export default HackingMinigame

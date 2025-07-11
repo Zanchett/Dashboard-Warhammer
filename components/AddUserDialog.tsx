@@ -1,73 +1,132 @@
-'use client'
+"use client"
 
-import React, { useState } from 'react'
-import { IconFeedAdd } from './icons'
+import { useState } from "react"
+import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { useToast } from "@/hooks/use-toast"
 
 interface AddUserDialogProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onSubmit: (userId: string) => void;
+  onUserAdded: () => void
 }
 
-export function AddUserDialog({ isOpen, onClose, onSubmit }: AddUserDialogProps) {
-  const [inputValue, setInputValue] = useState('');
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+export function AddUserDialog({ onUserAdded }: AddUserDialogProps) {
+  const [username, setUsername] = useState("")
+  const [password, setPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
+  const [error, setError] = useState("")
+  const [isOpen, setIsOpen] = useState(false)
+  const { toast } = useToast()
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (inputValue.trim()) {
-      setIsLoading(true);
-      setError('');
-      try {
-        const response = await fetch('/api/users/check', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ userId: inputValue.trim() }),
-        });
-
-        if (response.ok) {
-          onSubmit(inputValue.trim());
-          setInputValue('');
-          onClose();
-        } else {
-          const data = await response.json();
-          setError(data.error || 'An error occurred while checking the user');
-        }
-      } catch (error) {
-        console.error('Error checking user:', error);
-        setError('An error occurred while checking the user');
-      } finally {
-        setIsLoading(false);
-      }
+  const handleAddUser = async () => {
+    setError("")
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.")
+      return
     }
-  };
 
-  if (!isOpen) return null;
+    try {
+      const response = await fetch("/api/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, password }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        toast({
+          title: "User Added",
+          description: `User "${username}" has been successfully added.`,
+        })
+        setUsername("")
+        setPassword("")
+        setConfirmPassword("")
+        setIsOpen(false)
+        onUserAdded() // Notify parent component
+      } else {
+        setError(data.message || "Failed to add user.")
+        toast({
+          title: "Error",
+          description: data.message || "Failed to add user.",
+          variant: "destructive",
+        })
+      }
+    } catch (err) {
+      setError("An unexpected error occurred.")
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred.",
+        variant: "destructive",
+      })
+    }
+  }
 
   return (
-    <div className="dialog-overlay">
-      <div className="dialog-content">
-        <form onSubmit={handleSubmit} className="cyberpunk-input-container">
-          <div className="cyberpunk-input">
-            <input
-              type="text"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              placeholder="Enter Empire ID"
-              className="cyberpunk-input__field"
-              autoFocus
-              disabled={isLoading}
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        <Button className="btn-cyberpunk">Add New User</Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px] panel-cyberpunk">
+        <DialogHeader>
+          <DialogTitle className="text-neon">Add New User</DialogTitle>
+          <DialogDescription className="text-neon">Enter the details for the new user account.</DialogDescription>
+        </DialogHeader>
+        <div className="grid gap-4 py-4">
+          {error && <p className="text-red-neon text-sm">{error}</p>}
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="username" className="text-right text-neon">
+              Username
+            </Label>
+            <Input
+              id="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="col-span-3 input-cyberpunk"
             />
-            <button type="submit" className="cyberpunk-input__button" disabled={isLoading}>
-              {isLoading ? '...' : <IconFeedAdd className="cyberpunk-input__icon" />}
-            </button>
           </div>
-        </form>
-        {error && <div className="error-message">{error}</div>}
-      </div>
-    </div>
-  );
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="password" className="text-right text-neon">
+              Password
+            </Label>
+            <Input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="col-span-3 input-cyberpunk"
+            />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="confirmPassword" className="text-right text-neon">
+              Confirm Password
+            </Label>
+            <Input
+              id="confirmPassword"
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="col-span-3 input-cyberpunk"
+            />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button type="submit" onClick={handleAddUser} className="btn-cyberpunk">
+            Add User
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
 }

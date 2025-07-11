@@ -1,78 +1,61 @@
-import React, { useEffect, useRef } from 'react';
+"use client"
 
-const WarpFluctuationGraph: React.FC = () => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+import { useState, useEffect } from "react"
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
+
+interface DataPoint {
+  name: string
+  fluctuation: number
+}
+
+const generateWarpData = (count: number): DataPoint[] => {
+  const data: DataPoint[] = []
+  for (let i = 0; i < count; i++) {
+    data.push({
+      name: `T-${count - i}`,
+      fluctuation: Math.random() * 100, // Random fluctuation between 0 and 100
+    })
+  }
+  return data
+}
+
+export default function WarpFluctuationGraph() {
+  const [data, setData] = useState<DataPoint[]>([])
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+    // Initial data load
+    setData(generateWarpData(20))
 
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    // Update data every few seconds to simulate real-time fluctuations
+    const interval = setInterval(() => {
+      setData((prevData) => {
+        const newData = [...prevData.slice(1), { name: `T-0`, fluctuation: Math.random() * 100 }]
+        // Update names to reflect new time window
+        return newData.map((point, index) => ({ ...point, name: `T-${newData.length - 1 - index}` }))
+      })
+    }, 2000) // Update every 2 seconds
 
-    // Set canvas size to match container
-    const resizeCanvas = () => {
-      const parent = canvas.parentElement;
-      if (!parent) return;
-      canvas.width = parent.clientWidth;
-      canvas.height = parent.clientHeight;
-    };
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
-
-    // Animation variables
-    let animationFrameId: number;
-    const waves = [
-      { frequency: 0.02, amplitude: 30, speed: 0.04, offset: 0 },
-      { frequency: 0.03, amplitude: 15, speed: 0.02, offset: 4 },
-      { frequency: 0.01, amplitude: 20, speed: 0.01, offset: 2 }
-    ];
-
-    const animate = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      ctx.strokeStyle = '#14f074';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      
-      for (let x = 0; x < canvas.width; x++) {
-        let y = canvas.height / 2;
-        
-        // Combine multiple sine waves
-        waves.forEach(wave => {
-          wave.offset += wave.speed;
-          y += Math.sin(x * wave.frequency + wave.offset) * wave.amplitude;
-        });
-
-        if (x === 0) {
-          ctx.moveTo(x, y);
-        } else {
-          ctx.lineTo(x, y);
-        }
-      }
-
-      ctx.stroke();
-      animationFrameId = requestAnimationFrame(animate);
-    };
-
-    animate();
-
-    return () => {
-      window.removeEventListener('resize', resizeCanvas);
-      cancelAnimationFrame(animationFrameId);
-    };
-  }, []);
+    return () => clearInterval(interval)
+  }, [])
 
   return (
-    <canvas 
-      ref={canvasRef} 
-      style={{ 
-        width: '100%', 
-        height: '100%',
-        border: '1px solid rgba(20, 240, 116, 0.3)'
-      }} 
-    />
-  );
-};
-
-export default WarpFluctuationGraph;
+    <div className="panel-cyberpunk p-4">
+      <h3 className="text-neon text-lg mb-4">Warp Fluctuation Monitor</h3>
+      <ResponsiveContainer width="100%" height={300}>
+        <LineChart data={data} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="#00ff00" opacity={0.3} />
+          <XAxis dataKey="name" stroke="#00ff00" />
+          <YAxis stroke="#00ff00" />
+          <Tooltip
+            contentStyle={{ backgroundColor: "#1a1a1a", border: "1px solid #00ff00", color: "#00ff00" }}
+            labelStyle={{ color: "#00ff00" }}
+          />
+          <Line type="monotone" dataKey="fluctuation" stroke="#00ff00" strokeWidth={2} dot={false} />
+        </LineChart>
+      </ResponsiveContainer>
+      <p className="text-sm text-center mt-2">
+        Current Fluctuation: {data.length > 0 ? data[data.length - 1].fluctuation.toFixed(2) : "N/A"}%
+      </p>
+    </div>
+  )
+}

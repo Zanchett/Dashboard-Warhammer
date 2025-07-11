@@ -1,206 +1,86 @@
-.cogitator-interface {
+.chat-container {
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  background-color: #000000;
-  color: #1aff8c;
-  font-family: 'Share Tech Mono', monospace;
-  padding: 1rem;
-  animation: flicker 0.15s infinite;
+  height: 100%;
+  max-height: calc(100vh - 180px); /* Adjust based on dashboard layout */
+  background-color: #1a1a1a;
+  border: 2px solid #00ff00;
+  box-shadow: 0 0 20px #00ff00;
+  color: #00ff00;
+  font-family: "Share Tech Mono", monospace;
+  text-shadow: 0 0 5px #00ff00;
 }
 
-.interface-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.5rem 1rem;
-  border-bottom: 1px solid #1aff8c;
-  margin-bottom: 1rem;
-}
-
-.header-title {
-  font-weight: bold;
-  color: #1aff8c;
-}
-
-.header-status {
-  color: #1aff8c;
-}
-
-.interface-content {
-  display: flex;
-  gap: 1rem;
-  flex: 1;
-  min-height: 0;
-}
-
-.contacts-section {
-  width: 300px;
-  display: flex;
-  flex-direction: column;
-}
-
-.communication-section {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.section-header {
-  padding: 0.5rem;
-  background-color: rgba(26, 255, 140, 0.1);
-  margin-bottom: 1rem;
-}
-
-.input-section {
-  margin-top: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.cogitator-input {
-  background-color: rgba(0, 20, 0, 0.7) !important;
-  border: 1px solid #1aff8c !important;
-  color: #1aff8c !important;
-  font-family: 'Share Tech Mono', monospace !important;
-  padding: 0.5rem !important;
-}
-
-.cogitator-input:focus {
-  outline: none !important;
-  background-color: rgba(26, 255, 140, 0.1) !important;
-  box-shadow: 0 0 5px rgba(26, 255, 140, 0.3) !important;
-}
-
-.cogitator-input::placeholder {
-  color: rgba(26, 255, 140, 0.5) !important;
-}
-
-.execute-button {
-  padding: 0.5rem;
-  cursor: pointer;
-  color: #1aff8c;
-  background-color: rgba(26, 255, 140, 0.1);
-  text-align: center;
-  transition: all 0.2s ease;
-}
-
-.execute-button:hover {
-  background-color: rgba(26, 255, 140, 0.2);
-}
-
-.contact-list {
-  flex: 1;
+.message-area {
+  flex-grow: 1;
   overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
+  padding: 10px;
+  border-bottom: 1px solid rgba(0, 255, 0, 0.5);
 }
 
-.contact-entry {
-  padding: 0.5rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  transition: all 0.2s ease;
+.message-bubble {
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  max-width: 80%;
+  word-wrap: break-word;
 }
 
-.contact-entry:hover, .contact-entry.active {
-  background-color: rgba(26, 255, 140, 0.1);
-}
-
-.hex-prefix {
-  opacity: 0.7;
-}
-
-.unread-marker {
+.user-message {
+  background-color: #00ff00;
+  color: #0a0a0a;
+  align-self: flex-end;
   margin-left: auto;
-  color: #1aff8c;
+  text-shadow: none;
 }
 
-.message-feed {
-  flex: 1;
-  overflow-y: auto;
-  padding: 0.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.message-entry {
-  padding: 0.5rem;
-  background-color: rgba(26, 255, 140, 0.05);
+.other-message {
+  background-color: #0a0a0a;
+  color: #00ff00;
+  border: 1px solid #00ff00;
+  align-self: flex-start;
+  margin-right: auto;
 }
 
 .message-header {
   display: flex;
-  gap: 1rem;
-  margin-bottom: 0.25rem;
-  opacity: 0.7;
+  justify-content: space-between;
+  font-size: 0.8em;
+  margin-bottom: 5px;
 }
 
-.hex-timestamp {
-  font-family: 'Share Tech Mono', monospace;
+.message-sender {
+  font-weight: bold;
+  margin-right: 5px;
 }
 
-.message-content {
-  padding-left: 1rem;
-  word-break: break-word;
+.message-timestamp {
+  color: rgba(0, 255, 0, 0.7);
 }
 
-.message-entry.outgoing {
-  background-color: rgba(26, 255, 140, 0.1);
-}
-
-/* Scrollbar styling */
-::-webkit-scrollbar {
-  width: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: rgba(26, 255, 140, 0.1);
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgba(26, 255, 140, 0.3);
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(26, 255, 140, 0.5);
-}
-
-/* Add scanline effect */
-.cogitator-interface::before {
-  content: "";
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    transparent 50%,
-    rgba(0, 0, 0, 0.05) 50%
-  );
-  background-size: 100% 4px;
-  pointer-events: none;
-  z-index: 10;
-}
-
-/* Add screen flicker animation */
-
-@keyframes flicker {
-  0% { opacity: 0.99; }
-  50% { opacity: 1; }
-  100% { opacity: 0.99; }
-}
-
-.no-conversation-message {
+.input-area {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
-  color: rgba(26, 255, 140, 0.7);
-  font-style: italic;
+  padding: 10px;
+  gap: 10px;
+}
+
+.input-cyberpunk {
+  background-color: #0a0a0a;
+  border-color: #00ff00;
+  color: #00ff00;
+}
+
+.input-cyberpunk:focus {
+  box-shadow: 0 0 8px #00ff00;
+}
+
+.btn-cyberpunk {
+  background-color: #00ff00;
+  color: #0a0a0a;
+  text-shadow: none;
+}
+
+.btn-cyberpunk:hover {
+  background-color: #00cc00;
+  box-shadow: 0 0 15px #00ff00;
 }

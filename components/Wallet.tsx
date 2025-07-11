@@ -1,168 +1,149 @@
-import React, { useState, useEffect } from 'react';
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { getBalance, transferCredits, getTransactions, Transaction } from '@/app/actions/wallet';
-import { useToast } from "@/components/ui/use-toast";
-import { ScrollArea } from "@/components/ui/scroll-area";
+"use client"
 
-interface WalletProps {
-  username: string;
-}
+import { useState, useEffect } from "react"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Button } from "@/components/ui/button"
+import { useToast } from "@/hooks/use-toast"
+import "../styles/wallet.css"
+import { getWalletBalance, updateWalletBalance } from "@/app/actions/wallet"
 
-const Wallet: React.FC<WalletProps> = ({ username }) => {
-  const [balance, setBalance] = useState(0);
-  const [recipient, setRecipient] = useState('');
-  const [amount, setAmount] = useState('');
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isInitialLoading, setIsInitialLoading] = useState(true);
-  const { toast } = useToast();
+export default function WalletComponent() {
+  const [balance, setBalance] = useState<number | null>(null)
+  const [amount, setAmount] = useState<string>("")
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const { toast } = useToast()
+
+  const username = "Inquisitor" // Hardcoded for now, replace with actual user context
 
   useEffect(() => {
-    const fetchBalanceAndTransactions = async () => {
-      try {
-        const fetchedBalance = await getBalance(username);
-        setBalance(fetchedBalance);
-        const fetchedTransactions = await getTransactions(username);
-        setTransactions(fetchedTransactions);
-      } catch (error) {
-        console.error('Error fetching wallet data:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load wallet data. Please try again later.",
-          variant: "destructive",
-        });
-      } finally {
-        setIsInitialLoading(false);
-      }
-    };
-    fetchBalanceAndTransactions();
-  }, [username, toast]);
+    fetchBalance()
+  }, [])
 
-  const handleSend = async () => {
-    if (!recipient || !amount) {
-      toast({
-        title: "Error",
-        description: "Please enter both recipient and amount.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const amountNum = parseFloat(amount);
-    if (isNaN(amountNum) || amountNum <= 0 || amountNum > balance) {
-      toast({
-        title: "Error",
-        description: "Invalid amount. Please check your balance and enter a valid amount.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsLoading(true);
+  const fetchBalance = async () => {
+    setLoading(true)
+    setError(null)
     try {
-      const result = await transferCredits(username, recipient, amountNum);
+      const result = await getWalletBalance(username)
       if (result.success) {
-        const newBalance = await getBalance(username);
-        setBalance(newBalance);
-        const updatedTransactions = await getTransactions(username);
-        setTransactions(updatedTransactions);
-        setRecipient('');
-        setAmount('');
-
-        toast({
-          title: "Success",
-          description: result.message,
-        });
+        setBalance(result.balance)
       } else {
+        setError(result.message || "Failed to fetch balance.")
         toast({
           title: "Error",
-          description: result.message,
+          description: result.message || "Failed to fetch balance.",
           variant: "destructive",
-        });
+        })
       }
-    } catch (error) {
-      console.error('Error during transfer:', error);
+    } catch (err) {
+      console.error("Error fetching wallet balance:", err)
+      setError("An unexpected error occurred while fetching balance.")
       toast({
         title: "Error",
-        description: "An unexpected error occurred. Please try again later.",
+        description: "An unexpected error occurred while fetching balance.",
         variant: "destructive",
-      });
+      })
     } finally {
-      setIsLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
-  if (isInitialLoading) {
-    return <div className="wallet-loading">Loading wallet data...</div>;
+  const handleTransaction = async (type: "deposit" | "withdraw") => {
+    const numAmount = Number.parseFloat(amount)
+    if (isNaN(numAmount) || numAmount <= 0) {
+      setError("Please enter a valid positive amount.")
+      return
+    }
+    if (type === "withdraw" && balance !== null && numAmount > balance) {
+      setError("Insufficient funds.")
+      return
+    }
+
+    setLoading(true)
+    setError(null)
+    try {
+      const newBalance = type === "deposit" ? (balance || 0) + numAmount : (balance || 0) - numAmount
+      const result = await updateWalletBalance(username, newBalance)
+
+      if (result.success) {
+        setBalance(result.balance)
+        setAmount("")
+        toast({
+          title: `${type === "deposit" ? "Deposit" : "Withdrawal"} Successful`,
+          description: `Successfully ${type === "deposit" ? "deposited" : "withdrew"} ${numAmount.toFixed(2)} credits.`,
+        })
+      } else {
+        setError(result.message || `Failed to ${type} funds.`)
+        toast({
+          title: "Error",
+          description: result.message || `Failed to ${type} funds.`,
+          variant: "destructive",
+        })
+      }
+    } catch (err) {
+      console.error(`Error during ${type} transaction:`, err)
+      setError("An unexpected error occurred during the transaction.")
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred during the transaction.",
+        variant: "destructive",
+      })
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
-    <div className="cogitator-interface">
-      <div className="terminal-header">
-        <div className="header-title">COGITATOR INTERFACE v2.781</div>
-        <div className="header-status">WALLET ACCESS: GRANTED</div>
-      </div>
-      <div className="terminal-content">
-        <div className="wallet-balance">
-          <span className="balance-label">CREDIT BALANCE:</span>
-          <span className="balance-amount">{balance} CREDITS</span>
+    <div className="wallet-container panel-cyberpunk">
+      <h2 className="text-neon text-2xl mb-6 text-center">Imperial Credits Wallet</h2>
+
+      {loading ? (
+        <p className="text-center text-neon">Loading balance...</p>
+      ) : error ? (
+        <p className="text-center text-red-neon">{error}</p>
+      ) : (
+        <div className="text-center mb-8">
+          <p className="text-xl">Current Balance:</p>
+          <p className="text-5xl font-bold text-neon flicker-text">{balance?.toFixed(2) || "0.00"} ℣</p>
         </div>
-        <div className="wallet-transfer">
-          <h3 className="section-title">EXECUTE TRANSFER</h3>
-          <div className="input-section">
+      )}
+
+      <div className="transaction-section">
+        <h3 className="text-neon text-xl mb-4">Manage Funds</h3>
+        <div className="flex flex-col gap-4">
+          <div>
+            <Label htmlFor="amount" className="text-neon">
+              Amount (℣)
+            </Label>
             <Input
-              type="text"
-              placeholder="RECIPIENT EMPIRE ID"
-              value={recipient}
-              onChange={(e) => setRecipient(e.target.value)}
-              className="cogitator-input"
-            />
-            <Input
+              id="amount"
               type="number"
-              placeholder="AMOUNT"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              className="cogitator-input"
+              placeholder="0.00"
+              className="input-cyberpunk mt-2"
+              step="0.01"
             />
-            <Button 
-              onClick={handleSend} 
-              className="execute-button" 
-              disabled={isLoading}
+          </div>
+          <div className="flex gap-4">
+            <Button
+              onClick={() => handleTransaction("deposit")}
+              disabled={loading || !amount}
+              className="btn-cyberpunk flex-1"
             >
-              {isLoading ? 'PROCESSING...' : 'EXECUTE TRANSFER'}
+              Deposit
+            </Button>
+            <Button
+              onClick={() => handleTransaction("withdraw")}
+              disabled={loading || !amount || (balance !== null && Number.parseFloat(amount) > balance)}
+              className="btn-cyberpunk flex-1 bg-accent-red hover:bg-red-700"
+            >
+              Withdraw
             </Button>
           </div>
         </div>
-        <div className="wallet-transactions">
-          <h3 className="section-title">TRANSACTION LOG</h3>
-          <ScrollArea className="h-[calc(100vh-400px)]">
-            {transactions.length === 0 ? (
-              <div className="no-transactions">NO TRANSACTIONS FOUND</div>
-            ) : (
-              transactions.map((transaction, index) => (
-                <div key={index} className="transaction-item">
-                  <span className="transaction-type">
-                    {transaction.sender === username ? 'TO:' : 'FROM:'}
-                  </span>
-                  <span className="transaction-party">
-                    {transaction.sender === username ? transaction.recipient : transaction.sender}
-                  </span>
-                  <span className="transaction-amount">
-                    {transaction.sender === username ? '-' : '+'}
-                    {transaction.amount} CREDITS
-                  </span>
-                  <span className="transaction-date">
-                    {new Date(transaction.date).toLocaleString()}
-                  </span>
-                </div>
-              ))
-            )}
-          </ScrollArea>
-        </div>
       </div>
     </div>
-  );
-};
-
-export default Wallet;
+  )
+}

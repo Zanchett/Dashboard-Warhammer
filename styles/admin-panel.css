@@ -1,5 +1,5 @@
 .admin-panel {
-  font-family: 'Share Tech Mono', monospace;
+  font-family: "Share Tech Mono", monospace;
   color: #1aff8c;
   background-color: #000000;
   min-height: 100vh;
@@ -9,6 +9,21 @@
   animation: flicker 5s infinite;
 }
 
+.admin-panel-container {
+  padding: 20px;
+  background-color: #1a1a1a;
+  border: 2px solid #00ff00;
+  box-shadow: 0 0 20px #00ff00;
+  color: #00ff00;
+  font-family: "Share Tech Mono", monospace;
+  text-shadow: 0 0 5px #00ff00;
+}
+
+.admin-panel-container h2 {
+  color: #00ff00;
+  text-shadow: 0 0 8px #00ff00;
+}
+
 .admin-panel::before {
   content: "";
   position: fixed;
@@ -16,8 +31,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: 
-    linear-gradient(rgba(20, 240, 116, 0.03), rgba(20, 240, 116, 0.03) 1px, transparent 1px, transparent 2px),
+  background: linear-gradient(rgba(20, 240, 116, 0.03), rgba(20, 240, 116, 0.03) 1px, transparent 1px, transparent 2px),
     linear-gradient(90deg, rgba(20, 240, 116, 0.02), rgba(20, 240, 116, 0.02) 1px, transparent 1px, transparent 2px);
   background-size: 100% 2px, 2px 100%;
   pointer-events: none;
@@ -31,10 +45,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(
-    transparent 50%,
-    rgba(0, 0, 0, 0.05) 50%
-  );
+  background: linear-gradient(transparent 50%, rgba(0, 0, 0, 0.05) 50%);
   background-size: 100% 4px;
   pointer-events: none;
   z-index: 2;
@@ -88,7 +99,7 @@
   padding: 0.5rem;
   margin-bottom: 0.5rem;
   width: 100%;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: "Share Tech Mono", monospace;
 }
 
 .admin-input:focus,
@@ -159,13 +170,79 @@
 
 .mission-hexcode {
   font-family: monospace;
-  color: #60A5FA;
+  color: #60a5fa;
 }
 
 .mission-actions {
   display: flex;
   justify-content: flex-end;
   gap: 0.5rem;
+}
+
+.admin-section h3 {
+  color: #00ff00;
+  text-shadow: 0 0 6px #00ff00;
+  border-bottom: 1px solid rgba(0, 255, 0, 0.5);
+  padding-bottom: 5px;
+  margin-bottom: 15px;
+}
+
+/* Specific styles for shadcn components within admin panel to match theme */
+.input-cyberpunk {
+  background-color: #0a0a0a;
+  border-color: #00ff00;
+  color: #00ff00;
+}
+
+.input-cyberpunk:focus {
+  box-shadow: 0 0 8px #00ff00;
+}
+
+.btn-cyberpunk {
+  background-color: #00ff00;
+  color: #0a0a0a;
+  text-shadow: none;
+}
+
+.btn-cyberpunk:hover {
+  background-color: #00cc00;
+  box-shadow: 0 0 15px #00ff00;
+}
+
+.btn-cyberpunk.bg-accent-red {
+  background-color: #ff0000;
+}
+
+.btn-cyberpunk.bg-accent-red:hover {
+  background-color: #cc0000;
+  box-shadow: 0 0 15px #ff0000;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.table th,
+.table td {
+  border: 1px solid #00ff00;
+  padding: 8px;
+  text-align: left;
+}
+
+.table th {
+  background-color: #00ff00;
+  color: #0a0a0a;
+  text-shadow: none;
+}
+
+.table tr:nth-child(even) {
+  background-color: #0f0f0f;
+}
+
+.table tr:hover {
+  background-color: #2a2a2a;
 }
 
 /* Add scanline effect */
@@ -180,11 +257,21 @@
 
 /* Add screen flicker animation */
 @keyframes flicker {
-  0% { opacity: 0.99; }
-  5% { opacity: 0.95; }
-  10% { opacity: 0.99; }
-  15% { opacity: 0.98; }
-  20% { opacity: 1; }
+  0% {
+    opacity: 0.99;
+  }
+  5% {
+    opacity: 0.95;
+  }
+  10% {
+    opacity: 0.99;
+  }
+  15% {
+    opacity: 0.98;
+  }
+  20% {
+    opacity: 1;
+  }
 }
 
 .admin-panel .library-item {

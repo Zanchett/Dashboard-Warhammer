@@ -1,159 +1,90 @@
-'use client'
+"use client"
 
-import React, { useState, useEffect } from 'react'
+import { useState } from "react"
 import { Input } from "@/components/ui/input"
-import { User, UserPlus } from 'lucide-react'
-import { useToast } from "@/components/ui/use-toast"
-
-interface ContactsProps {
-  username: string;
-  onStartConversation: (contactId: string) => void;
-}
+import { Button } from "@/components/ui/button"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { useToast } from "@/hooks/use-toast"
+import { Icons } from "./icons"
+import "../styles/contacts.css"
 
 interface Contact {
   id: string
   name: string
+  status: "online" | "offline" | "busy"
+  lastSeen: string
 }
 
-const Contacts: React.FC<ContactsProps> = ({ username, onStartConversation }) => {
-  const [contacts, setContacts] = useState<Contact[]>([])
-  const [newContactName, setNewContactName] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
+const initialContacts: Contact[] = [
+  { id: "1", name: "Tech-Priest Dominus", status: "online", lastSeen: "Now" },
+  { id: "2", name: "Commissar Yarrick", status: "busy", lastSeen: "10 mins ago" },
+  { id: "3", name: "Lord Inquisitor", status: "offline", lastSeen: "2 days ago" },
+  { id: "4", name: "Captain Titus", status: "online", lastSeen: "Now" },
+  { id: "5", name: "Sister of Battle", status: "busy", lastSeen: "30 mins ago" },
+  { id: "6", name: "Astra Militarum Commander", status: "offline", lastSeen: "1 hour ago" },
+]
+
+export default function Contacts() {
+  const [contacts, setContacts] = useState<Contact[]>(initialContacts)
+  const [searchTerm, setSearchTerm] = useState("")
   const { toast } = useToast()
 
-  useEffect(() => {
-    fetchContacts()
-  }, [])
+  const filteredContacts = contacts.filter((contact) => contact.name.toLowerCase().includes(searchTerm.toLowerCase()))
 
-  const fetchContacts = async () => {
-    try {
-      const response = await fetch(`/api/conversations?username=${username}`)
-      if (response.ok) {
-        const data = await response.json()
-        setContacts(data)
-      } else {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to fetch contacts')
-      }
-    } catch (error) {
-      console.error('Error fetching contacts:', error)
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to fetch contacts",
-        variant: "destructive",
-      })
+  const getStatusColor = (status: Contact["status"]) => {
+    switch (status) {
+      case "online":
+        return "text-green-500"
+      case "busy":
+        return "text-yellow-500"
+      case "offline":
+        return "text-red-500"
+      default:
+        return "text-gray-500"
     }
   }
 
-  const addContact = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!newContactName.trim()) return
-
-    setIsLoading(true)
-    try {
-      const response = await fetch('/api/conversations', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userId: newContactName.trim(),
-          currentUser: username
-        }),
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to add contact')
-      }
-
-      setContacts(prev => [...prev, data])
-      setNewContactName('')
-      toast({
-        title: "Success",
-        description: "Contact added successfully",
-      })
-    } catch (error) {
-      console.error('Error adding contact:', error)
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to add contact",
-        variant: "destructive",
-      })
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const getHexId = (id: string) => {
-    return `0x${id.slice(0, 6).toUpperCase()}`;
+  const handleAddContact = () => {
+    toast({
+      title: "Feature Not Implemented",
+      description: "Adding new contacts is not yet available.",
+    })
   }
 
   return (
-    <div className="cogitator-interface">
-      <div className="interface-header">
-        <div className="header-title">COGITATOR INTERFACE v2.781</div>
-        <div className="header-status">CONTACT DATABASE</div>
+    <div className="contacts-container panel-cyberpunk">
+      <h2 className="text-neon text-2xl mb-4 text-center">Imperial Contacts</h2>
+      <div className="contacts-search-bar">
+        <Input
+          type="text"
+          placeholder="Search contacts..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="input-cyberpunk flex-grow"
+        />
+        <Button onClick={handleAddContact} className="btn-cyberpunk">
+          <Icons.plus className="h-5 w-5" /> Add
+        </Button>
       </div>
-      
-      <div className="interface-content">
-        <div className="content-grid">
-          <div className="contacts-section">
-            <div className="section-header">REGISTERED CONTACTS</div>
-            <div className="contact-list">
-              {contacts.map((contact) => (
-                <div key={contact.id} className="contact-entry">
-                  <User className="w-4 h-4 mr-2" />
-                  <span className="hex-prefix">{getHexId(contact.id)}</span>
+      <ScrollArea className="contacts-list">
+        <div className="p-4">
+          {filteredContacts.length === 0 ? (
+            <p className="text-center text-muted-foreground">No contacts found.</p>
+          ) : (
+            filteredContacts.map((contact) => (
+              <div key={contact.id} className="contact-item">
+                <div className="contact-info">
                   <span className="contact-name">{contact.name}</span>
-                  <div 
-                    className="execute-button ml-auto"
-                    onClick={() => onStartConversation(contact.id)}
-                    role="button"
-                    tabIndex={0}
-                  >
-                    INITIATE TRANSMISSION
-                  </div>
+                  <span className={`contact-status ${getStatusColor(contact.status)}`}>
+                    {contact.status.charAt(0).toUpperCase() + contact.status.slice(1)}
+                  </span>
                 </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="add-contact-section">
-            <div className="section-header">ADD NEW CONTACT</div>
-            <form onSubmit={addContact} className="add-contact-form">
-              <div className="input-section">
-                <Input
-                  type="text"
-                  value={newContactName}
-                  onChange={(e) => setNewContactName(e.target.value)}
-                  placeholder="ENTER CONTACT ID"
-                  className="cogitator-input"
-                  disabled={isLoading}
-                />
+                <span className="contact-last-seen">Last Seen: {contact.lastSeen}</span>
               </div>
-              <div 
-                className="execute-button"
-                onClick={addContact}
-                role="button"
-                tabIndex={0}
-              >
-                {isLoading ? (
-                  "PROCESSING..."
-                ) : (
-                  <>
-                    <UserPlus className="w-4 h-4 mr-2" />
-                    EXECUTE ADD_CONTACT
-                  </>
-                )}
-              </div>
-            </form>
-          </div>
+            ))
+          )}
         </div>
-      </div>
+      </ScrollArea>
     </div>
   )
 }
-
-export default Contacts

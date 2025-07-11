@@ -1,112 +1,46 @@
-import React, { useState, useEffect, useRef } from 'react';
-import styles from '../styles/StartupAnimation.module.css';
+"use client"
 
-interface FileEntry {
-  name: string;
-  permissions: string;
-  links: number;
-  owner: string;
-  group: string;
-  size: string;
-  date: string;
-  isDirectory: boolean;
-  symlink?: string;
-}
+import { useState, useEffect } from "react"
+import { CSSTransition } from "react-transition-group"
+import "../styles/StartupAnimation.module.css" // Import the CSS module
 
-interface StartupAnimationProps {
-  onComplete: () => void;
-}
-
-const StartupAnimation: React.FC<StartupAnimationProps> = ({ onComplete }) => {
-  const [entries, setEntries] = useState<FileEntry[]>([]);
-  const [showSummary, setShowSummary] = useState(false);
-  const [showConclusion, setShowConclusion] = useState(false);
-  const contentRef = useRef<HTMLDivElement>(null);
+export default function StartupAnimation({ onComplete }: { onComplete: () => void }) {
+  const [showScreen, setShowScreen] = useState(true)
+  const [showText, setShowText] = useState(false)
+  const [showLogin, setShowLogin] = useState(false)
 
   useEffect(() => {
-    console.log('StartupAnimation useEffect triggered');
+    const timer1 = setTimeout(() => {
+      setShowText(true)
+    }, 500) // Show text after 0.5 seconds
 
-    const fileEntries: FileEntry[] = [
-      { name: "bin", permissions: "lrwxrwxrwx", links: 1, owner: "root", group: "root", size: "7", date: "999.M41", isDirectory: false, symlink: "usr/bin" },
-      { name: "boot", permissions: "drwxr-xr-x", links: 2, owner: "root", group: "root", size: "4096", date: "001.M42", isDirectory: true },
-      { name: "dev", permissions: "drwxr-xr-x", links: 16, owner: "root", group: "root", size: "3560", date: "995.M41", isDirectory: true },
-      { name: "etc", permissions: "drwxr-xr-x", links: 93, owner: "root", group: "root", size: "4096", date: "998.M41", isDirectory: true },
-      { name: "home", permissions: "drwxr-xr-x", links: 4, owner: "root", group: "root", size: "4096", date: "003.M42", isDirectory: true },
-      { name: "lib", permissions: "lrwxrwxrwx", links: 1, owner: "root", group: "root", size: "7", date: "997.M41", isDirectory: false, symlink: "usr/lib" },
-      { name: "lib32", permissions: "lrwxrwxrwx", links: 1, owner: "root", group: "root", size: "9", date: "996.M41", isDirectory: false, symlink: "usr/lib32" },
-      { name: "lib64", permissions: "lrwxrwxrwx", links: 1, owner: "root", group: "root", size: "9", date: "996.M41", isDirectory: false, symlink: "usr/lib64" },
-      { name: "libx32", permissions: "lrwxrwxrwx", links: 1, owner: "root", group: "root", size: "10", date: "996.M41", isDirectory: false, symlink: "usr/libx32" },
-      { name: "lost+found", permissions: "drwx------", links: 2, owner: "root", group: "root", size: "16384", date: "750.M41", isDirectory: true },
-      { name: "media", permissions: "drwxr-xr-x", links: 2, owner: "root", group: "root", size: "4096", date: "999.M41", isDirectory: true },
-      { name: "mnt", permissions: "drwxr-xr-x", links: 12, owner: "root", group: "root", size: "4096", date: "005.M42", isDirectory: true },
-      { name: "opt", permissions: "drwxr-xr-x", links: 2, owner: "root", group: "root", size: "4096", date: "002.M42", isDirectory: true },
-      { name: "proc", permissions: "dr-xr-xr-x", links: 319, owner: "root", group: "root", size: "0", date: "999.M41", isDirectory: true },
-      { name: "root", permissions: "drwx------", links: 8, owner: "root", group: "root", size: "4096", date: "004.M42", isDirectory: true }
-    ];
+    const timer2 = setTimeout(() => {
+      setShowScreen(false) // Start fading out the animation screen
+    }, 3000) // Keep animation for 3 seconds
 
-    let currentIndex = 0;
-    const interval = setInterval(() => {
-      if (currentIndex < fileEntries.length) {
-        setEntries(prev => [...prev, fileEntries[currentIndex]]);
-        currentIndex++;
-        if (contentRef.current) {
-          contentRef.current.scrollTop = contentRef.current.scrollHeight;
-        }
-      } else {
-        clearInterval(interval);
-        setShowSummary(true);
-        setTimeout(() => {
-          setShowConclusion(true);
-          setTimeout(() => {
-            console.log('Animation complete, calling onComplete');
-            onComplete();
-          }, 2000);
-        }, 1000);
-      }
-    }, 100);
+    const timer3 = setTimeout(() => {
+      onComplete() // Call onComplete after animation is fully gone
+    }, 4000) // Allow 1 second for fade-out transition
 
-    return () => clearInterval(interval);
-  }, [onComplete]);
+    return () => {
+      clearTimeout(timer1)
+      clearTimeout(timer2)
+      clearTimeout(timer3)
+    }
+  }, [onComplete])
 
   return (
-    <div className={styles.terminalContainer}>
-      <div className={styles.terminalContent} ref={contentRef}>
-        <div className={styles.header}>
-          <span>Permissions</span>
-          <span>Links</span>
-          <span>Owner</span>
-          <span>Group</span>
-          <span>Size</span>
-          <span>Date</span>
-          <span>Name</span>
-        </div>
-        {entries.map((entry, index) => (
-          <div key={index} className={styles.entry}>
-            <span>{entry?.permissions || 'N/A'}</span>
-            <span>{entry?.links || 'N/A'}</span>
-            <span>{entry?.owner || 'N/A'}</span>
-            <span>{entry?.group || 'N/A'}</span>
-            <span>{entry?.size || 'N/A'}</span>
-            <span>{entry?.date || 'N/A'}</span>
-            <span className={entry?.isDirectory ? styles.directory : styles.file}>
-              {entry?.name || 'N/A'}{entry?.symlink && ` -> ${entry.symlink}`}
-            </span>
-          </div>
-        ))}
-        {showSummary && (
-          <div className={styles.summary}>
-            {entries.length} directories
-            <div className={styles.totalLine}>total 2288</div>
-          </div>
-        )}
-        {showConclusion && (
-          <div className={styles.conclusion}>
-            Progress complete - Initializing dataslate...
-          </div>
-        )}
+    <CSSTransition
+      in={showScreen}
+      timeout={1000} // Match this with the CSS transition duration
+      classNames="startup-screen"
+      unmountOnExit
+    >
+      <div className="startup-screen">
+        <CSSTransition in={showText} timeout={500} classNames="startup-text" unmountOnExit>
+          <h1 className="startup-text">Initializing... For the Emperor!</h1>
+        </CSSTransition>
       </div>
-    </div>
-  );
-};
-
-export default StartupAnimation;
+    </CSSTransition>
+  )
+}

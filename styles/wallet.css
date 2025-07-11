@@ -1,16 +1,22 @@
 .wallet-container {
-  padding: 1rem;
-  background-color: rgba(0, 20, 0, 0.95);
-  border: 1px solid rgba(26, 255, 140, 0.3);
-  color: #1aff8c;
-  font-family: 'Share Tech Mono', monospace;
+  padding: 20px;
+  background-color: #1a1a1a;
+  border: 2px solid #00ff00;
+  box-shadow: 0 0 20px #00ff00;
+  color: #00ff00;
+  font-family: "Share Tech Mono", monospace;
+  text-shadow: 0 0 5px #00ff00;
+}
+
+.wallet-container h2 {
+  color: #00ff00;
+  text-shadow: 0 0 8px #00ff00;
 }
 
 .wallet-title {
   font-size: 1.5rem;
   margin-bottom: 1rem;
   text-align: center;
-  text-shadow: 0 0 5px rgba(26, 255, 140, 0.5);
 }
 
 .wallet-balance {
@@ -18,17 +24,17 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
-  padding: 1rem; /* Updated padding */
+  padding: 1rem;
   background-color: rgba(26, 255, 140, 0.1);
-  border: 1px solid #1aff8c; /* Updated border color */
+  border: 1px solid #1aff8c;
 }
 
-.balance-label { /* New class */
+.balance-label {
   font-size: 1.2rem;
 }
 
 .balance-amount {
-  font-size: 1.5rem; /* Updated font size */
+  font-size: 1.5rem;
   font-weight: bold;
 }
 
@@ -88,6 +94,14 @@
   border: 1px solid #1aff8c;
 }
 
+.transaction-section h3 {
+  color: #00ff00;
+  text-shadow: 0 0 6px #00ff00;
+  border-bottom: 1px solid rgba(0, 255, 0, 0.5);
+  padding-bottom: 5px;
+  margin-bottom: 15px;
+}
+
 .transaction-item {
   display: flex;
   justify-content: space-between;
@@ -99,7 +113,10 @@
   border-bottom: none;
 }
 
-.transaction-type, .transaction-party, .transaction-amount, .transaction-date { /* New classes */
+.transaction-type,
+.transaction-party,
+.transaction-amount,
+.transaction-date {
   flex: 1;
 }
 
@@ -123,7 +140,7 @@
 }
 
 .cogitator-interface {
-  font-family: 'Share Tech Mono', monospace;
+  font-family: "Share Tech Mono", monospace;
   background-color: #000000;
   color: #1aff8c;
   height: 100%;
@@ -143,12 +160,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(
-    rgba(20, 240, 116, 0.03),
-    rgba(20, 240, 116, 0.03) 1px,
-    transparent 1px,
-    transparent 2px
-  );
+  background: linear-gradient(rgba(20, 240, 116, 0.03), rgba(20, 240, 116, 0.03) 1px, transparent 1px, transparent 2px);
   background-size: 100% 2px;
   pointer-events: none;
   z-index: 1;
@@ -161,10 +173,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(
-    transparent 50%,
-    rgba(0, 0, 0, 0.05) 50%
-  );
+  background: linear-gradient(transparent 50%, rgba(0, 0, 0, 0.05) 50%);
   background-size: 100% 4px;
   pointer-events: none;
   z-index: 2;
@@ -225,7 +234,7 @@
 }
 
 .cogitator-input::placeholder {
-  color: rgba(26, 255, 140, 0.5);
+  color: rgba(26, 255, 116, 0.5);
 }
 
 .execute-button {
@@ -247,6 +256,35 @@
   cursor: not-allowed;
 }
 
+.input-cyberpunk {
+  background-color: #0a0a0a;
+  border-color: #00ff00;
+  color: #00ff00;
+}
+
+.input-cyberpunk:focus {
+  box-shadow: 0 0 8px #00ff00;
+}
+
+.btn-cyberpunk {
+  background-color: #00ff00;
+  color: #0a0a0a;
+  text-shadow: none;
+}
+
+.btn-cyberpunk:hover {
+  background-color: #00cc00;
+  box-shadow: 0 0 15px #00ff00;
+}
+
+.btn-cyberpunk.bg-accent-red {
+  background-color: #ff0000;
+}
+
+.btn-cyberpunk.bg-accent-red:hover {
+  background-color: #cc0000;
+  box-shadow: 0 0 15px #ff0000;
+}
 
 /* Scrollbar styling */
 .terminal-content::-webkit-scrollbar {
@@ -268,7 +306,13 @@
 
 /* Add screen flicker animation */
 @keyframes flicker {
-  0% { opacity: 0.99; }
-  50% { opacity: 1; }
-  100% { opacity: 0.99; }
+  0% {
+    opacity: 0.99;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.99;
+  }
 }

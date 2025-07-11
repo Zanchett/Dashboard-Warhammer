@@ -1,7 +1,7 @@
 "use server"
 
 import { Redis } from "@upstash/redis"
-import { findUser } from "@/lib/users"
+import { getAllUsers, deleteUserByUsername, getUserByUsername } from "@/lib/users"
 import { getBalance, updateBalance } from "./wallet"
 import type { CharacterSheet } from "@/types/character-sheet"
 
@@ -10,19 +10,46 @@ const redis = new Redis({
   token: process.env.KV_REST_API_TOKEN,
 })
 
-export async function getAllUsers(): Promise<string[]> {
+export async function getUsers(): Promise<{ success: boolean; users?: User[]; message?: string }> {
   try {
-    const users = (await redis.get("users")) as any[]
-    return users.map((user) => user.username)
+    const users = await getAllUsers()
+    // Filter out sensitive data like hashedPassword before sending to client
+    const safeUsers = users.map((user) => ({ id: user.id, username: user.username }))
+    return { success: true, users: safeUsers }
   } catch (error) {
-    console.error("Error fetching all users:", error)
-    return []
+    console.error("Error fetching users:", error)
+    return { success: false, message: "Failed to fetch users." }
+  }
+}
+
+export async function deleteUser(userId: string): Promise<{ success: boolean; message?: string }> {
+  try {
+    // In a real app, you'd likely delete by ID, but our current lib/users uses username as primary key for redis.hset
+    // So, we need to fetch the username first if we only have the ID.
+    // For simplicity, let's assume userId is the username for now, or enhance lib/users.ts
+    // For this example, I'll fetch all users and find by ID, then delete by username.
+    const allUsers = await getAllUsers()
+    const userToDelete = allUsers.find((user) => user.id === userId)
+
+    if (!userToDelete) {
+      return { success: false, message: "User not found." }
+    }
+
+    const deleted = await deleteUserByUsername(userToDelete.username)
+    if (deleted) {
+      return { success: true, message: "User deleted successfully." }
+    } else {
+      return { success: false, message: "Failed to delete user." }
+    }
+  } catch (error) {
+    console.error("Error deleting user:", error)
+    return { success: false, message: "Internal server error." }
   }
 }
 
 export async function getUserData(username: string): Promise<any> {
   try {
-    const user = await findUser(username)
+    const user = await getUserByUsername(username)
     if (!user) {
       throw new Error("User not found")
     }
@@ -256,4 +283,9 @@ export async function cleanUpgradesDatabase(): Promise<{ success: boolean; messa
         error instanceof Error ? error.message : "An unexpected error occurred while cleaning the upgrades database",
     }
   }
+}
+
+interface User {
+  id: string
+  username: string
 }

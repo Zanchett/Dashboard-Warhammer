@@ -1,22 +1,92 @@
 .library-container {
-  font-family: 'Share Tech Mono', monospace;
-  background-color: #000000;
-  color: #14f074;
-  padding: 1rem;
+  font-family: "Share Tech Mono", monospace;
+  background-color: #1a1a1a;
+  color: #00ff00;
+  padding: 20px;
   height: 100%;
   display: flex;
   flex-direction: column;
+  border: 2px solid #00ff00;
+  box-shadow: 0 0 20px #00ff00;
+  text-shadow: 0 0 5px #00ff00;
+}
+
+.library-container h2 {
+  color: #00ff00;
+  text-shadow: 0 0 8px #00ff00;
+}
+
+.library-search-bar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.library-search-bar .input-cyberpunk {
+  flex-grow: 1;
+  background-color: #0a0a0a;
+  border-color: #00ff00;
+  color: #00ff00;
+}
+
+.library-search-bar .input-cyberpunk:focus {
+  box-shadow: 0 0 8px #00ff00;
+}
+
+.library-search-bar .btn-cyberpunk {
+  background-color: #00ff00;
+  color: #0a0a0a;
+  text-shadow: none;
+}
+
+.library-search-bar .btn-cyberpunk:hover {
+  background-color: #00cc00;
+  box-shadow: 0 0 15px #00ff00;
+}
+
+.library-content {
+  flex-grow: 1;
   overflow-y: auto;
+  padding-right: 10px; /* For scrollbar */
+}
+
+.library-item {
+  background-color: #0a0a0a;
+  border: 1px solid #00ff00;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 15px;
+  box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+  transition: transform 0.2s ease-in-out;
+}
+
+.library-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 0 15px #00ff00;
+}
+
+.library-item h3 {
+  color: #00ff00;
+  text-shadow: 0 0 5px #00ff00;
+  margin-bottom: 5px;
+}
+
+.library-item p {
+  font-size: 0.9em;
+  color: rgba(0, 255, 0, 0.8);
+}
+
+.library-item .text-muted-foreground {
+  color: rgba(0, 255, 0, 0.6);
 }
 
 .library-title {
   font-size: 1.5rem;
-  color: #14f074;
+  color: #00ff00;
   margin-bottom: 1rem;
   text-align: center;
   text-transform: uppercase;
   letter-spacing: 2px;
-  text-shadow: 0 0 10px rgba(20, 240, 116, 0.5);
 }
 
 .tree-view {
@@ -37,11 +107,11 @@
 }
 
 .tree-line:hover {
-  background-color: rgba(20, 240, 116, 0.1);
+  background-color: rgba(0, 255, 0, 0.1);
 }
 
 .tree-prefix {
-  color: #14f074;
+  color: #00ff00;
   opacity: 0.7;
   margin-right: 4px;
   font-family: monospace;
@@ -53,8 +123,9 @@
   gap: 4px;
 }
 
-.folder-icon, .item-icon {
-  color: #14f074;
+.folder-icon,
+.item-icon {
+  color: #00ff00;
   display: flex;
   align-items: center;
 }
@@ -64,7 +135,7 @@
 }
 
 .file-size {
-  color: #14f074;
+  color: #00ff00;
   opacity: 0.7;
   margin-left: 8px;
 }
@@ -72,8 +143,8 @@
 .file-preview {
   margin-top: 1rem;
   padding: 1rem;
-  background-color: rgba(20, 240, 116, 0.05);
-  border: 1px solid rgba(20, 240, 116, 0.2);
+  background-color: rgba(0, 255, 0, 0.05);
+  border: 1px solid rgba(0, 255, 0, 0.2);
 }
 
 .file-preview-header {
@@ -86,7 +157,7 @@
 .close-button {
   background: none;
   border: none;
-  color: #1aff8c;
+  color: #00ff00;
   cursor: pointer;
   padding: 0.25rem;
   transition: all 0.2s ease;
@@ -98,25 +169,25 @@
 
 .file-preview h3 {
   margin-bottom: 0.5rem;
-  color: #14f074;
+  color: #00ff00;
 }
 
 .file-preview pre {
-  font-family: 'Share Tech Mono', monospace;
+  font-family: "Share Tech Mono", monospace;
   white-space: pre-wrap;
-  color: #14f074;
+  color: #00ff00;
   opacity: 0.9;
 }
 
 /* Tree lines */
 .tree-item::before {
-  content: '';
+  content: "";
   position: absolute;
   left: 7px;
   top: 14px;
   bottom: 0;
   width: 1px;
-  background-color: rgba(20, 240, 116, 0.3);
+  background-color: rgba(0, 255, 0, 0.3);
 }
 
 .tree-item:last-child::before {
@@ -133,16 +204,16 @@
 }
 
 .library-container::-webkit-scrollbar-track {
-  background: rgba(20, 240, 116, 0.1);
+  background: rgba(0, 255, 0, 0.1);
 }
 
 .library-container::-webkit-scrollbar-thumb {
-  background-color: rgba(20, 240, 116, 0.3);
+  background-color: rgba(0, 255, 0, 0.3);
   border-radius: 4px;
 }
 
 .library-container::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(20, 240, 116, 0.5);
+  background-color: rgba(0, 255, 0, 0.5);
 }
 
 .delete-button {

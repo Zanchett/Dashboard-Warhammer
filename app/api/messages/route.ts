@@ -1,26 +1,39 @@
-import { NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
+import { NextResponse } from "next/server"
+import { Redis } from "@upstash/redis"
 
-const messagesFile = path.join(process.cwd(), 'data', 'messages.json');
+const redis = Redis.fromEnv()
 
-export async function GET() {
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url)
+  const conversationId = searchParams.get("conversationId")
+
+  if (!conversationId) {
+    return NextResponse.json({ message: "Conversation ID is required" }, { status: 400 })
+  }
+
   try {
-    const messages = JSON.parse(fs.readFileSync(messagesFile, 'utf-8'));
-    return NextResponse.json(messages);
+    const messages = await redis.lrange(`conversation:${conversationId}:messages`, 0, -1)
+    return NextResponse.json(messages.map((msg) => JSON.parse(msg as string)))
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to fetch messages' }, { status: 500 });
+    console.error("Error fetching messages:", error)
+    return NextResponse.json({ message: "Failed to fetch messages" }, { status: 500 })
   }
 }
 
 export async function POST(request: Request) {
+  const { conversationId, sender, text, timestamp } = await request.json()
+
+  if (!conversationId || !sender || !text || !timestamp) {
+    return NextResponse.json({ message: "Missing required fields" }, { status: 400 })
+  }
+
+  const message = { sender, text, timestamp }
+
   try {
-    const newMessage = await request.json();
-    const messages = JSON.parse(fs.readFileSync(messagesFile, 'utf-8'));
-    messages.push(newMessage);
-    fs.writeFileSync(messagesFile, JSON.stringify(messages, null, 2));
-    return NextResponse.json(newMessage, { status: 201 });
+    await redis.rpush(`conversation:${conversationId}:messages`, JSON.stringify(message))
+    return NextResponse.json({ message: "Message sent successfully" }, { status: 201 })
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to send message' }, { status: 500 });
+    console.error("Error sending message:", error)
+    return NextResponse.json({ message: "Failed to send message" }, { status: 500 })
   }
 }

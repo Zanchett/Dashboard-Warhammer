@@ -1,20 +1,27 @@
-import React from 'react';
-import { useTranslation } from 'react-i18next';
+"use client"
+
+import { useTranslation } from "@/utils/i18n"
 import { Button } from "@/components/ui/button"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 
-const LanguageToggle: React.FC = () => {
-  const { i18n } = useTranslation();
-
-  const toggleLanguage = () => {
-    const newLang = i18n.language === 'en' ? 'pt-BR' : 'en';
-    i18n.changeLanguage(newLang);
-  };
+export default function LanguageToggle() {
+  const { currentLocale, changeLanguage } = useTranslation()
 
   return (
-    <Button onClick={toggleLanguage} className="language-toggle">
-      {i18n.language === 'en' ? 'PT-BR' : 'EN'}
-    </Button>
-  );
-};
-
-export default LanguageToggle;
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" className="btn-cyberpunk bg-transparent">
+          Language: {currentLocale.toUpperCase()}
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="panel-cyberpunk">
+        <DropdownMenuItem onClick={() => changeLanguage("en")} className="hover:bg-[#00cc00] hover:text-[#0a0a0a]">
+          English
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => changeLanguage("pt-BR")} className="hover:bg-[#00cc00] hover:text-[#0a0a0a]">
+          Português (BR)
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}

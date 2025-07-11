@@ -2,142 +2,99 @@
 
 import { Redis } from "@upstash/redis"
 
-const redis = new Redis({
-  url: process.env.KV_REST_API_URL,
-  token: process.env.KV_REST_API_TOKEN,
-})
+const redis = Redis.fromEnv()
 
-export interface LibraryItem {
+interface LibraryEntry {
   id: string
-  name: string
-  type: "folder" | "file"
-  content?: string
-  path: string[]
+  title: string
+  author: string
+  content: string
+  category: string
 }
 
-const initialLibraryContent: LibraryItem[] = [
-  {
-    id: "1",
-    name: "Characters",
-    type: "folder",
-    path: [],
-    content: undefined,
-  },
-  {
-    id: "2",
-    name: "Locations",
-    type: "folder",
-    path: [],
-    content: undefined,
-  },
-  {
-    id: "3",
-    name: "Space Marines",
-    type: "file",
-    path: ["Characters"],
-    content:
-      "The Space Marines are the Imperium's finest warriors, genetically enhanced super-soldiers who serve as the Emperor's angels of death.",
-  },
-  {
-    id: "4",
-    name: "Terra",
-    type: "file",
-    path: ["Locations"],
-    content:
-      "Terra, also known as Holy Terra or Old Earth, is the throne world of the Imperium of Man and the original homeworld of mankind.",
-  },
-]
+// Seed initial data if not present
+async function seedLibraryData() {
+  const entryCount = await redis.llen("library:all_ids")
+  if (entryCount === 0) {
+    const initialEntries: LibraryEntry[] = [
+      {
+        id: "lib1",
+        title: "The Imperial Creed",
+        author: "Ecclesiarchy",
+        content: "The foundational tenets of faith in the God-Emperor of Mankind.",
+        category: "Theology",
+      },
+      {
+        id: "lib2",
+        title: "Xenos Threat Assessment: Tyranids",
+        author: "Ordo Xenos",
+        content: "Detailed analysis of the Tyranid hive fleets, their biology, and tactics.",
+        category: "Xenology",
+      },
+      {
+        id: "lib3",
+        title: "A Brief History of the Horus Heresy",
+        author: "Inquisitor Czevak",
+        content: "An overview of the galaxy-spanning civil war that nearly destroyed the Imperium.",
+        category: "History",
+      },
+      {
+        id: "lib4",
+        title: "Mechanicus Rites of Maintenance",
+        author: "Adeptus Mechanicus",
+        content: "Sacred rituals and procedures for the upkeep of Imperial machinery.",
+        category: "Tech-Lore",
+      },
+      {
+        id: "lib5",
+        title: "Tactical Doctrine: Urban Warfare",
+        author: "Astra Militarum",
+        content: "Strategies and considerations for combat operations in dense urban environments.",
+        category: "Military",
+      },
+    ]
 
-export async function getLibraryContent(): Promise<LibraryItem[]> {
-  try {
-    console.log("Attempting to fetch library content from Redis")
-    const content = await redis.get("library:content")
-    console.log("Raw content from Redis:", content)
-
-    if (!content) {
-      console.log("Library content not found, initializing with default content")
-      await redis.set("library:content", JSON.stringify(initialLibraryContent))
-      return initialLibraryContent
+    const pipeline = redis.pipeline()
+    for (const entry of initialEntries) {
+      pipeline.hset(`library:entry:${entry.id}`, entry)
+      pipeline.rpush("library:all_ids", entry.id)
     }
+    await pipeline.exec()
+    console.log("Library data seeded.")
+  }
+}
 
-    if (typeof content === "string") {
-      try {
-        const parsedContent = JSON.parse(content)
-        console.log("Parsed library content:", parsedContent)
-        return parsedContent
-      } catch (parseError) {
-        console.error("Error parsing JSON:", parseError)
-        return initialLibraryContent
-      }
-    } else if (Array.isArray(content)) {
-      console.log("Content is already an array:", content)
-      return content
+// Call seed function on server startup (or first access)
+seedLibraryData()
+
+export async function getLibraryEntries(): Promise<{ success: boolean; entries?: LibraryEntry[]; message?: string }> {
+  try {
+    const ids = await redis.lrange("library:all_ids", 0, -1)
+    const pipeline = redis.pipeline()
+    for (const id of ids) {
+      pipeline.hgetall(`library:entry:${id}`)
+    }
+    const results = await pipeline.exec()
+    const entries: LibraryEntry[] = results.map((res) => res.result as LibraryEntry)
+    return { success: true, entries }
+  } catch (error) {
+    console.error("Error fetching library entries:", error)
+    return { success: false, message: "Failed to fetch library entries." }
+  }
+}
+
+export async function getLibraryEntry(
+  id: string,
+): Promise<{ success: boolean; entry?: LibraryEntry; message?: string }> {
+  try {
+    const entry = await redis.hgetall(`library:entry:${id}`)
+    if (entry) {
+      return { success: true, entry: entry as LibraryEntry }
     } else {
-      console.log("Unexpected content type:", typeof content)
-      return initialLibraryContent
+      return { success: false, message: "Entry not found." }
     }
   } catch (error) {
-    console.error("Error fetching library content:", error)
-    if (error instanceof Error) {
-      console.error("Error message:", error.message)
-      console.error("Error stack:", error.stack)
-    }
-    return initialLibraryContent
-  }
-}
-
-export async function addLibraryItem(item: LibraryItem): Promise<boolean> {
-  try {
-    const content = await getLibraryContent()
-    content.push(item)
-    await redis.set("library:content", JSON.stringify(content))
-    return true
-  } catch (error) {
-    console.error("Error adding library item:", error)
-    return false
-  }
-}
-
-export async function updateLibraryItem(item: LibraryItem): Promise<boolean> {
-  try {
-    const content = await getLibraryContent()
-    const index = content.findIndex((i) => i.id === item.id)
-    if (index !== -1) {
-      content[index] = item
-      await redis.set("library:content", JSON.stringify(content))
-      return true
-    }
-    return false
-  } catch (error) {
-    console.error("Error updating library item:", error)
-    return false
-  }
-}
-
-export async function deleteLibraryItem(id: string): Promise<boolean> {
-  try {
-    let content = (await redis.get("library:content")) as LibraryItem[]
-    if (!content) {
-      return false
-    }
-
-    const itemToDelete = content.find((item) => item.id === id)
-    if (!itemToDelete) {
-      return false
-    }
-
-    // If it's a folder, delete all items inside it
-    if (itemToDelete.type === "folder") {
-      content = content.filter((item) => !item.path.includes(itemToDelete.name))
-    }
-
-    // Delete the item itself
-    content = content.filter((item) => item.id !== id)
-
-    await redis.set("library:content", JSON.stringify(content))
-    return true
-  } catch (error) {
-    console.error("Error deleting library item:", error)
-    return false
+    console.error("Error fetching library entry:", error)
+    return { success: false, message: "Failed to fetch library entry." }
   }
 }

@@ -1,15 +1,16 @@
 import { Redis } from "@upstash/redis"
+import bcrypt from "bcrypt"
 
 type User = {
   id: string
   username: string
-  password: string
+  hashedPassword: string
 }
 
-const redis = new Redis({
-  url: process.env.KV_REST_API_URL,
-  token: process.env.KV_REST_API_TOKEN,
-})
+const redis = Redis.fromEnv()
+
+// In a real application, you'd use a more robust ID generation
+const generateUserId = () => `user:${Date.now()}:${Math.random().toString(36).substring(2, 9)}`
 
 async function ensureRedisConnection(maxRetries = 5, retryDelay = 1000): Promise<void> {
   let retries = 0
@@ -38,27 +39,13 @@ async function getUsers(): Promise<User[]> {
   try {
     await ensureRedisConnection()
 
-    const usersString = await redis.get("users")
-    console.log("Raw users data from Redis:", usersString)
-
-    if (!usersString) {
-      console.log("No users found in Redis")
-      return []
-    }
-
-    let users: User[]
-    if (typeof usersString === "string") {
-      users = JSON.parse(usersString)
-    } else if (Array.isArray(usersString)) {
-      users = usersString
-    } else {
-      console.error("Unexpected data type for users:", typeof usersString)
-      return []
-    }
-
-    if (!Array.isArray(users)) {
-      console.error("Users data is not an array")
-      return []
+    const usernames = await redis.smembers("users:all")
+    const users: User[] = []
+    for (const username of usernames) {
+      const user = await redis.hgetall(`user:${username}`)
+      if (user) {
+        users.push(user as User)
+      }
     }
 
     console.log("Retrieved users:", users)
@@ -73,33 +60,77 @@ async function setUsers(users: User[]): Promise<void> {
   try {
     await ensureRedisConnection()
 
-    const usersString = JSON.stringify(users)
-    await redis.set("users", usersString)
-    console.log("Users updated successfully. Stored data:", usersString)
+    for (const user of users) {
+      await redis.hset(`user:${user.username}`, user)
+      await redis.sadd("users:all", user.username)
+    }
+    console.log("Users updated successfully.")
   } catch (error) {
     console.error("Error writing users:", error)
     throw new Error("Failed to update users")
   }
 }
 
-export async function addUser(username: string, password: string): Promise<User> {
-  console.log("Adding new user:", username)
+export async function createUser(username: string, password: string): Promise<User> {
+  console.log("Creating new user:", username)
   const users = await getUsers()
   const existingUser = users.find((user) => user.username === username)
   if (existingUser) {
     throw new Error("Username already exists")
   }
-  const newUser: User = { id: Date.now().toString(), username, password }
+  const hashedPassword = await bcrypt.hash(password, 10)
+  const newUser: User = { id: generateUserId(), username, hashedPassword }
   users.push(newUser)
   await setUsers(users)
   return newUser
 }
 
+export async function getUserByUsername(username: string): Promise<User | null> {
+  const user = await redis.hgetall(`user:${username}`)
+  return user ? (user as User) : null
+}
+
+export async function getUserById(id: string): Promise<User | null> {
+  // This would require storing user IDs mapping to usernames or direct user objects
+  // For simplicity, assuming username is the primary key for now in redis.hgetall
+  // If you need to look up by ID, you'd need a separate index or store user objects by ID
+  // For now, this function is a placeholder or would require a different Redis structure
+  const allUsernames = await redis.smembers("users:all")
+  for (const username of allUsernames) {
+    const user = await redis.hgetall(`user:${username}`)
+    if (user && user.id === id) {
+      return user as User
+    }
+  }
+  return null
+}
+
+export async function getAllUsers(): Promise<User[]> {
+  const usernames = await redis.smembers("users:all")
+  const users: User[] = []
+  for (const username of usernames) {
+    const user = await redis.hgetall(`user:${username}`)
+    if (user) {
+      users.push(user as User)
+    }
+  }
+  return users
+}
+
+export async function deleteUserByUsername(username: string): Promise<boolean> {
+  const userExists = await redis.exists(`user:${username}`)
+  if (!userExists) {
+    return false
+  }
+  await redis.del(`user:${username}`)
+  await redis.srem("users:all", username)
+  return true
+}
+
 export async function findUser(username: string): Promise<User | undefined> {
   console.log("Searching for user:", username)
   try {
-    const users = await getUsers()
-    const user = users.find((user) => user.username === username)
+    const user = await getUserByUsername(username)
     console.log("User found:", user)
     return user
   } catch (error) {
@@ -108,6 +139,6 @@ export async function findUser(username: string): Promise<User | undefined> {
   }
 }
 
-export function validatePassword(user: User, password: string): boolean {
-  return user.password === password
+export async function validatePassword(user: User, password: string): Promise<boolean> {
+  return bcrypt.compare(password, user.hashedPassword)
 }

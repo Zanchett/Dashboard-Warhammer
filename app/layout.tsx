@@ -1,38 +1,29 @@
 import type React from "react"
-import "../styles/globals.css"
-import "../styles/global-crt.css"
-import "../styles/wallet.css"
-import "../styles/admin-panel.css"
-import "../styles/servitor-assistant.css"
-import "../styles/mechanicus-upgrades.css"
-import "../styles/library.css"
-import "../styles/messages.css"
-import "../styles/missions.css"
-import { Toaster } from "react-hot-toast"
+import type { Metadata } from "next"
 import { Share_Tech_Mono } from "next/font/google"
+import "./globals.css"
+import { cn } from "@/lib/utils"
 
-// Initialize the Share Tech Mono font
 const shareTechMono = Share_Tech_Mono({
-  weight: "400",
   subsets: ["latin"],
-  display: "swap",
+  weight: "400",
   variable: "--font-share-tech-mono",
 })
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export const metadata: Metadata = {
+  title: "Warhammer Chat",
+  description: "An Imperial chat interface for the grimdark future.",
+    generator: 'v0.dev'
+}
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode
+}>) {
   return (
-    <html lang="en" className={shareTechMono.variable}>
-      <body>
-        <div className="global-crt">
-          <div className="crt-overlay"></div>
-          {children}
-        </div>
-        <Toaster />
-      </body>
+    <html lang="en">
+      <body className={cn("min-h-screen bg-background font-sans antialiased", shareTechMono.variable)}>{children}</body>
     </html>
   )
 }
-
-export const metadata = {
-      generator: 'v0.dev'
-    };

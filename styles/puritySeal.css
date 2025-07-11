@@ -1,52 +1,63 @@
-.purity-seal {
-  background-color: rgba(20, 240, 116, 0.1);
-  border: 1px solid #14f074;
-  padding: 1rem;
-  margin-bottom: 1rem;
+.purity-seal-display {
+  padding: 20px;
+  background-color: #1a1a1a;
+  border: 2px solid #00ff00;
+  box-shadow: 0 0 20px #00ff00;
+  color: #00ff00;
+  font-family: "Share Tech Mono", monospace;
+  text-shadow: 0 0 5px #00ff00;
+}
+
+.purity-seal-display h3 {
+  color: #00ff00;
+  text-shadow: 0 0 8px #00ff00;
+}
+
+.purity-seal-item {
   display: flex;
-  flex-direction: column;
   align-items: center;
+  gap: 15px;
+  background-color: #0a0a0a;
+  border: 1px solid #00ff00;
+  border-radius: 8px;
+  padding: 15px;
+  box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+  transition: transform 0.2s ease-in-out;
 }
 
-.seal-icon {
-  width: 64px;
-  height: 64px;
-  margin-bottom: 0.5rem;
+.purity-seal-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 0 15px #00ff00;
 }
 
-.seal-info {
-  text-align: center;
+.purity-seal-icon {
+  color: #00ff00;
+  flex-shrink: 0;
+  filter: drop-shadow(0 0 5px #00ff00);
 }
 
-.seal-info h3 {
-  color: #14f074;
-  margin-bottom: 0.5rem;
+.purity-seal-info {
+  flex-grow: 1;
 }
 
-.seal-level {
-  display: inline-block;
-  padding: 0.25rem 0.5rem;
-  margin-right: 0.5rem;
+.purity-seal-name {
   font-weight: bold;
+  color: #00ff00;
+  text-shadow: 0 0 5px #00ff00;
+  margin-bottom: 3px;
 }
 
-.seal-level.bronze { background-color: #cd7f32; }
-.seal-level.silver { background-color: #c0c0c0; }
-.seal-level.gold { background-color: #ffd700; }
-.seal-level.platinum { background-color: #e5e4e2; }
-
-.seal-category {
-  font-style: italic;
+.purity-seal-description {
+  font-size: 0.9em;
+  color: rgba(0, 255, 0, 0.8);
 }
 
-.seal-earned {
-  margin-top: 0.5rem;
-  font-size: 0.9rem;
+.purity-seal-date {
+  font-size: 0.8em;
+  color: rgba(0, 255, 0, 0.6);
+  margin-top: 5px;
 }
 
-.seal-lore {
-  margin-top: 1rem;
-  font-style: italic;
-  color: rgba(20, 240, 116, 0.7);
-  text-align: center;
+.text-muted-foreground {
+  color: rgba(0, 255, 0, 0.7);
 }

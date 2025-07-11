@@ -1,46 +1,63 @@
-.mechanicus-upgrades {
-  font-family: 'Share Tech Mono', monospace;
+.mechanicus-upgrades-container {
+  padding: 20px;
+  background-color: #1a1a1a;
+  border: 2px solid #00ff00;
+  box-shadow: 0 0 20px #00ff00;
+  color: #00ff00;
+  font-family: "Share Tech Mono", monospace;
+  text-shadow: 0 0 5px #00ff00;
 }
 
-.mechanicus-upgrades h2 {
-  text-shadow: 0 0 10px rgba(26, 255, 140, 0.5);
+.mechanicus-upgrades-container h2 {
+  color: #00ff00;
+  text-shadow: 0 0 8px #00ff00;
 }
 
-.mechanicus-upgrades .bg-secondary {
-  background-color: rgba(20, 240, 116, 0.1);
-  border: 1px solid rgba(26, 255, 140, 0.3);
+.upgrade-card {
+  background-color: #0a0a0a;
+  border-color: #00ff00;
+  box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
 }
 
-.mechanicus-upgrades .text-primary {
-  color: #1aff8c;
+.upgrade-card .card-header {
+  border-bottom: 1px solid rgba(0, 255, 0, 0.3);
+  padding-bottom: 10px;
+  margin-bottom: 10px;
 }
 
-.mechanicus-upgrades .text-secondary {
-  color: #14f074;
+.upgrade-card .card-title {
+  color: #00ff00;
+  text-shadow: 0 0 6px #00ff00;
 }
 
-.mechanicus-upgrades button {
-  background-color: rgba(26, 255, 140, 0.2);
-  border: 1px solid #1aff8c;
-  color: #1aff8c;
-  transition: all 0.3s ease;
+.upgrade-card .text-muted-foreground {
+  color: rgba(0, 255, 0, 0.7);
 }
 
-.mechanicus-upgrades button:hover:not(:disabled) {
-  background-color: rgba(26, 255, 140, 0.3);
-  box-shadow: 0 0 10px rgba(26, 255, 140, 0.5);
+.upgrade-card .progress-root {
+  background-color: #0a0a0a;
+  border-color: #00ff00;
 }
 
-.mechanicus-upgrades button:disabled {
-  opacity: 0.5;
+.upgrade-card .progress-indicator {
+  background-color: #00ff00;
+  box-shadow: 0 0 8px #00ff00;
+}
+
+.btn-cyberpunk {
+  background-color: #00ff00;
+  color: #0a0a0a;
+  text-shadow: none;
+}
+
+.btn-cyberpunk:hover {
+  background-color: #00cc00;
+  box-shadow: 0 0 15px #00ff00;
+}
+
+.btn-cyberpunk:disabled {
+  background-color: #333;
+  color: #666;
+  box-shadow: none;
   cursor: not-allowed;
-}
-
-.mechanicus-upgrades .progress {
-  background-color: rgba(26, 255, 140, 0.1);
-  border: 1px solid #1aff8c;
-}
-
-.mechanicus-upgrades .progress div {
-  background-color: #1aff8c;
 }

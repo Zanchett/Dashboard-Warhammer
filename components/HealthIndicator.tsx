@@ -1,60 +1,35 @@
-import React, { useState, useEffect } from 'react';
-import styles from '../styles/HealthIndicator.module.css';
+"use client"
+
+import { useState, useEffect } from "react"
+import { Progress } from "@/components/ui/progress"
+import { cn } from "@/lib/utils"
+import styles from "../styles/HealthIndicator.module.css"
 
 interface HealthIndicatorProps {
-  currentHealth: number;
-  maxHealth: number;
-  onHealthChange: (current: number, max: number) => void;
+  currentHealth: number
+  maxHealth: number
 }
 
-const HealthIndicator: React.FC<HealthIndicatorProps> = ({ currentHealth, maxHealth, onHealthChange }) => {
-  const [animationDuration, setAnimationDuration] = useState('1s');
+export default function HealthIndicator({ currentHealth, maxHealth }: HealthIndicatorProps) {
+  const [progress, setProgress] = useState(0)
 
   useEffect(() => {
-    const healthPercentage = (currentHealth / maxHealth) * 100;
-    const newDuration = `${4 - (healthPercentage / 100) * 3}s`;
-    setAnimationDuration(newDuration);
-  }, [currentHealth, maxHealth]);
+    const calculatedProgress = (currentHealth / maxHealth) * 100
+    setProgress(calculatedProgress)
+  }, [currentHealth, maxHealth])
+
+  const getHealthColorClass = (value: number) => {
+    if (value > 75) return styles.healthHigh
+    if (value > 40) return styles.healthMedium
+    return styles.healthLow
+  }
 
   return (
-    <div className={styles.healthIndicator}>
-      <div className={styles.monitorTitle}>HEALTH MONITOR</div>
-      <div className={styles.monitorContainer}>
-        <div 
-          className={styles.ecgLineContainer}
-          style={{ animationDuration }}
-        >
-          <svg viewBox="0 0 100 100" preserveAspectRatio="none" className={styles.ecgSvg}>
-            <path 
-              d="M 0,50 L 40,50 L 45,20 L 50,80 L 55,50 L 100,50" 
-              className={styles.ecgLine}
-            />
-          </svg>
-          <svg viewBox="0 0 100 100" preserveAspectRatio="none" className={styles.ecgSvg}>
-            <path 
-              d="M 0,50 L 40,50 L 45,20 L 50,80 L 55,50 L 100,50" 
-              className={styles.ecgLine}
-            />
-          </svg>
-        </div>
+    <div className={cn("w-full", styles.healthIndicatorContainer)}>
+      <div className={styles.healthText}>
+        Health: {currentHealth}/{maxHealth}
       </div>
-      <div className={styles.healthInputs}>
-        <input 
-          type="number" 
-          value={currentHealth} 
-          onChange={(e) => onHealthChange(Number(e.target.value), maxHealth)}
-          className={styles.healthInput}
-        />
-        <span>/</span>
-        <input 
-          type="number" 
-          value={maxHealth} 
-          onChange={(e) => onHealthChange(currentHealth, Number(e.target.value))}
-          className={styles.healthInput}
-        />
-      </div>
+      <Progress value={progress} className={cn("w-full", styles.healthProgressBar, getHealthColorClass(progress))} />
     </div>
-  );
-};
-
-export default HealthIndicator;
+  )
+}

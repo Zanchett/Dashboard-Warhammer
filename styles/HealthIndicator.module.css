@@ -94,3 +94,48 @@
   margin: 0 0.5rem;
   font-size: 1.2rem;
 }
+
+.healthIndicatorContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid var(--neon-green);
+  border-radius: 8px;
+  background-color: var(--darker-bg);
+  box-shadow: 0 0 10px var(--shadow-color);
+}
+
+.healthText {
+  font-family: "Share Tech Mono", monospace;
+  color: var(--text-color);
+  font-size: 1.1em;
+  text-shadow: 0 0 5px var(--shadow-color);
+}
+
+.healthProgressBar {
+  height: 15px;
+  border-radius: 5px;
+  overflow: hidden;
+  background-color: var(--dark-bg); /* Background for the empty part of the bar */
+  border: 1px solid var(--border-color);
+}
+
+.healthProgressBar > div {
+  /* This targets the Progress.Indicator component */
+  transition: width 0.5s ease-in-out, background-color 0.5s ease-in-out;
+  box-shadow: 0 0 5px var(--shadow-color); /* Add shadow to the filled part */
+}
+
+.healthHigh > div {
+  background-color: #00ff00; /* Green */
+}
+
+.healthMedium > div {
+  background-color: #ffff00; /* Yellow */
+}
+
+.healthLow > div {
+  background-color: #ff0000; /* Red */
+}

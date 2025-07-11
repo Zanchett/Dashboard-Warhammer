@@ -1,164 +1,110 @@
-import React, { useState, useEffect } from 'react';
-import { AlertCircle, Zap, Database, Shield } from 'lucide-react';
+"use client"
 
-interface Node {
-  type: 'data' | 'firewall' | 'power' | 'empty';
-  active: boolean;
-  revealed: boolean;
-  hint: string;
-  showHint: boolean;
-}
+import { Label } from "@/components/ui/label"
+
+import type React from "react"
+import { useState, useEffect, useCallback } from "react"
+import { Button } from "@/components/ui/button"
+import { Progress } from "@/components/ui/progress"
+import { useToast } from "@/hooks/use-toast"
+import { Icons } from "./icons"
 
 interface CogitatorCoreBreachProps {
-  onSuccess: () => void;
-  onFailure: () => void;
+  onBreachSuccess: () => void
+  onBreachFail: () => void
 }
 
-const CogitatorCoreBreach: React.FC<CogitatorCoreBreachProps> = ({ onSuccess, onFailure }) => {
-  const [grid, setGrid] = useState<Node[][]>([]);
-  const [energy, setEnergy] = useState(100);
-  const [dataCollected, setDataCollected] = useState(0);
-  const [gameStatus, setGameStatus] = useState<'playing' | 'won' | 'lost'>('playing');
-  const [scansAvailable, setScansAvailable] = useState(3);
+const MAX_BREACH_LEVEL = 100
+const BREACH_RATE_PER_CLICK = 10
+const DECAY_RATE_PER_SECOND = 5
+
+const CogitatorCoreBreach: React.FC<CogitatorCoreBreachProps> = ({ onBreachSuccess, onBreachFail }) => {
+  const [breachLevel, setBreachLevel] = useState(0)
+  const [isActive, setIsActive] = useState(false)
+  const [message, setMessage] = useState("")
+  const { toast } = useToast()
+
+  const startGame = useCallback(() => {
+    setBreachLevel(0)
+    setIsActive(true)
+    setMessage("Initiating core breach... Click to overload!")
+    toast({
+      title: "Cogitator Core Breach Started",
+      description: "Click rapidly to overload the core before it stabilizes!",
+    })
+  }, [toast])
 
   useEffect(() => {
-    initializeGrid();
-  }, []);
-
-  const initializeGrid = () => {
-    const newGrid: Node[][] = [];
-    for (let i = 0; i < 8; i++) {
-      const row: Node[] = [];
-      for (let j = 0; j < 8; j++) {
-        row.push(generateNode());
-      }
-      newGrid.push(row);
-    }
-    setGrid(newGrid);
-  };
-
-  const generateNode = (): Node => {
-    const rand = Math.random();
-    if (rand < 0.1) return { type: 'data', active: true, revealed: false, hint: 'D', showHint: false };
-    if (rand < 0.3) return { type: 'firewall', active: true, revealed: false, hint: 'F', showHint: false };
-    if (rand < 0.5) return { type: 'power', active: true, revealed: false, hint: 'P', showHint: false };
-    return { type: 'empty', active: false, revealed: false, hint: '-', showHint: false };
-  };
-
-  const handleNodeClick = (row: number, col: number) => {
-    if (gameStatus !== 'playing' || energy <= 0) return;
-
-    const newGrid = [...grid];
-    const node = newGrid[row][col];
-
-    if (!node.revealed) {
-      node.revealed = true;
-      setEnergy(energy - 5);
-
-      if (node.type === 'data') {
-        setDataCollected(dataCollected + 1);
-        if (dataCollected + 1 >= 5) {
-          setGameStatus('won');
-          onSuccess();
-        }
-      } else if (node.type === 'firewall') {
-        setEnergy(energy - 20);
-      } else if (node.type === 'power') {
-        setEnergy(Math.min(energy + 15, 100));
-      }
-
-      if (energy - 5 <= 0) {
-        setGameStatus('lost');
-        onFailure();
-      }
-    }
-
-    setGrid(newGrid);
-  };
-
-  const handleScan = () => {
-    if (scansAvailable > 0 && gameStatus === 'playing') {
-      const newGrid = grid.map((row, i) =>
-        row.map((node, j) => {
-          if (!node.revealed) {
-            const adjacentNodes = [
-              grid[i - 1]?.[j],
-              grid[i + 1]?.[j],
-              grid[i]?.[j - 1],
-              grid[i]?.[j + 1],
-            ].filter(Boolean);
-            const hasRevealedNeighbor = adjacentNodes.some((n) => n.revealed);
-            if (hasRevealedNeighbor) {
-              return { ...node, showHint: true };
-            }
+    let decayInterval: NodeJS.Timeout | null = null
+    if (isActive) {
+      decayInterval = setInterval(() => {
+        setBreachLevel((prevLevel) => {
+          const newLevel = Math.max(0, prevLevel - DECAY_RATE_PER_SECOND)
+          if (newLevel === 0 && prevLevel > 0) {
+            setIsActive(false)
+            setMessage("Breach failed: Core stabilized.")
+            toast({
+              title: "Breach Failed",
+              description: "The cogitator core stabilized.",
+              variant: "destructive",
+            })
+            onBreachFail()
           }
-          return node;
+          return newLevel
         })
-      );
-      setGrid(newGrid);
-      setScansAvailable(scansAvailable - 1);
+      }, 1000) // Decay every second
     }
-  };
 
-  const getNodeIcon = (node: Node) => {
-    if (!node.revealed) {
-      if (node.showHint) {
-        return <span className="node-hint">{node.hint}</span>;
+    return () => {
+      if (decayInterval) clearInterval(decayInterval)
+    }
+  }, [isActive, onBreachFail, toast])
+
+  const handleOverloadClick = () => {
+    if (!isActive) return
+
+    setBreachLevel((prevLevel) => {
+      const newLevel = Math.min(MAX_BREACH_LEVEL, prevLevel + BREACH_RATE_PER_CLICK)
+      if (newLevel >= MAX_BREACH_LEVEL) {
+        setIsActive(false)
+        setMessage("Core breached! System compromised.")
+        toast({
+          title: "Breach Successful",
+          description: "The cogitator core has been successfully breached!",
+        })
+        onBreachSuccess()
       }
-      return <AlertCircle className="w-6 h-6 text-gray-500" />;
-    }
-    switch (node.type) {
-      case 'data':
-        return <Database className="w-6 h-6 text-blue-500" />;
-      case 'firewall':
-        return <Shield className="w-6 h-6 text-red-500" />;
-      case 'power':
-        return <Zap className="w-6 h-6 text-yellow-500" />;
-      default:
-        return null;
-    }
-  };
+      return newLevel
+    })
+  }
 
   return (
-    <div className="cogitator-core-breach">
-      <div className="game-header">
-        <h2>Cogitator Core Breach</h2>
-        <div className="game-stats">
-          <span>Energy: {energy}</span>
-          <span>Data Collected: {dataCollected}/5</span>
-          <span>Scans: {scansAvailable}</span>
-        </div>
+    <div className="panel-cyberpunk p-6 flex flex-col items-center gap-6">
+      <h3 className="text-neon text-xl">Cogitator Core Breach</h3>
+      <div className="w-full">
+        <Label htmlFor="breach-progress" className="text-neon mb-2 block">
+          Breach Level: {breachLevel}%
+        </Label>
+        <Progress value={breachLevel} className="w-full" />
       </div>
-      <div className="grid-container">
-        {grid.map((row, rowIndex) => (
-          <div key={rowIndex} className="grid-row">
-            {row.map((node, colIndex) => (
-              <div
-                key={`${rowIndex}-${colIndex}`}
-                className={`grid-node ${node.revealed ? 'revealed' : ''} ${node.type}`}
-                onClick={() => handleNodeClick(rowIndex, colIndex)}
-              >
-                {getNodeIcon(node)}
-              </div>
-            ))}
-          </div>
-        ))}
-      </div>
-      <button
-        className="scan-button"
-        onClick={handleScan}
-        disabled={scansAvailable === 0 || gameStatus !== 'playing'}
-      >
-        Scan
-      </button>
-      {gameStatus === 'won' && (
-        <div className="game-message success">Access granted. Core breached successfully.</div>
-      )}
-      {gameStatus === 'lost' && (
-        <div className="game-message failure">Energy depleted. Breach attempt failed.</div>
+
+      {isActive ? (
+        <>
+          <Button
+            onClick={handleOverloadClick}
+            className="btn-cyberpunk text-lg px-8 py-3 w-full max-w-xs animate-pulse"
+          >
+            <Icons.zap className="mr-2 h-5 w-5" /> Overload Core!
+          </Button>
+          <p className="text-sm text-center text-neon">{message}</p>
+        </>
+      ) : (
+        <Button onClick={startGame} className="btn-cyberpunk text-lg px-8 py-3">
+          <Icons.play className="mr-2 h-5 w-5" /> Initiate Breach
+        </Button>
       )}
     </div>
-  );
-};
+  )
+}
 
-export default CogitatorCoreBreach;
+export default CogitatorCoreBreach

@@ -1,102 +1,98 @@
-import React, { useState, useEffect } from 'react';
-import { Folder, File, ChevronRight, ChevronDown, Trash2, X } from 'lucide-react';
-import { getLibraryContent, LibraryItem, deleteLibraryItem } from '@/app/actions/library';
-import { useToast } from "@/components/ui/use-toast"
+"use client"
 
-const Library: React.FC = () => {
-  const [library, setLibrary] = useState<LibraryItem[]>([]);
-  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
-  const [selectedFile, setSelectedFile] = useState<LibraryItem | null>(null);
+import { useState, useEffect } from "react"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { useToast } from "@/hooks/use-toast"
+import { Icons } from "./icons"
+import "../styles/library.css"
+import { getLibraryEntries } from "@/app/actions/library"
 
-  const { toast } = useToast();
+interface LibraryEntry {
+  id: string
+  title: string
+  author: string
+  content: string
+  category: string
+}
+
+export default function Library() {
+  const [entries, setEntries] = useState<LibraryEntry[]>([])
+  const [searchTerm, setSearchTerm] = useState("")
+  const [loading, setLoading] = useState(true)
+  const { toast } = useToast()
+
+  const fetchEntries = async () => {
+    setLoading(true)
+    try {
+      const result = await getLibraryEntries()
+      if (result.success && result.entries) {
+        setEntries(result.entries)
+      } else {
+        toast({
+          title: "Error",
+          description: result.message || "Failed to fetch library entries.",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      console.error("Error fetching library entries:", error)
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred while fetching library entries.",
+        variant: "destructive",
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    const fetchLibraryContent = async () => {
-      try {
-        const content = await getLibraryContent();
-        setLibrary(content);
-      } catch (error) {
-        console.error('Error fetching library content:', error);
-        setLibrary([]);
-      }
-    };
-    fetchLibraryContent();
-  }, []);
+    fetchEntries()
+  }, [])
 
-  const toggleFolder = (folderName: string) => {
-    setExpandedFolders(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(folderName)) {
-        newSet.delete(folderName);
-      } else {
-        newSet.add(folderName);
-      }
-      return newSet;
-    });
-  };
-
-  const closeFile = () => {
-    setSelectedFile(null);
-  };
-
-  const renderTreeItem = (item: LibraryItem, depth: number = 0) => {
-    const isFolder = item.type === 'folder';
-    const isExpanded = expandedFolders.has(item.name);
-    const fullPath = [...item.path, item.name];
-    const childItems = library.filter(child => 
-      JSON.stringify(child.path) === JSON.stringify(fullPath)
-    );
-
-    return (
-      <div key={item.id} className="tree-item">
-        <div 
-          className="tree-line"
-          style={{ marginLeft: `${depth * 20}px` }}
-        >
-          <div 
-            className="tree-content"
-            onClick={() => isFolder ? toggleFolder(item.name) : setSelectedFile(item)}
-          >
-            {isFolder && (
-              <span className="folder-icon">
-                {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-              </span>
-            )}
-            <span className="item-icon">
-              {isFolder ? <Folder className="w-4 h-4" /> : <File className="w-4 h-4" />}
-            </span>
-            <span className="item-name">{item.name}</span>
-            {!isFolder && <span className="file-size">[4.0K]</span>}
-          </div>
-        </div>
-        {isFolder && isExpanded && childItems.map((child) => 
-          renderTreeItem(child, depth + 1)
-        )}
-      </div>
-    );
-  };
-
-  const rootItems = library.filter(item => item.path.length === 0);
+  const filteredEntries = entries.filter(
+    (entry) =>
+      entry.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      entry.author.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      entry.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      entry.category.toLowerCase().includes(searchTerm.toLowerCase()),
+  )
 
   return (
-    <div className="library-container">
-      <h2 className="library-title">Cogitator File System</h2>
-      <div className="tree-view">
-        {rootItems.map((item) => renderTreeItem(item))}
+    <div className="library-container panel-cyberpunk">
+      <h2 className="text-neon text-2xl mb-4 text-center">Imperial Library</h2>
+      <div className="library-search-bar">
+        <Input
+          type="text"
+          placeholder="Search Library..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="input-cyberpunk"
+        />
+        <Button className="btn-cyberpunk">
+          <Icons.book className="h-5 w-5" /> Search
+        </Button>
       </div>
-      {selectedFile && (
-        <div className="file-preview">
-          <div className="file-preview-header">
-            <h3>{selectedFile.name}</h3>
-            <button onClick={closeFile} className="close-button">
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-          <pre>{selectedFile.content}</pre>
+      <ScrollArea className="library-content">
+        <div className="p-4">
+          {loading ? (
+            <p className="text-center text-neon">Loading library...</p>
+          ) : filteredEntries.length === 0 ? (
+            <p className="text-center text-muted-foreground">No entries found matching your search.</p>
+          ) : (
+            filteredEntries.map((entry) => (
+              <div key={entry.id} className="library-item">
+                <h3 className="text-lg font-bold">{entry.title}</h3>
+                <p className="text-sm text-muted-foreground">Author: {entry.author}</p>
+                <p className="text-sm text-muted-foreground">Category: {entry.category}</p>
+                <p className="mt-2">{entry.content}</p>
+              </div>
+            ))
+          )}
         </div>
-      )}
+      </ScrollArea>
     </div>
-  );
-};
-
-export default Library;
+  )
+}

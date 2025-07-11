@@ -1,38 +1,49 @@
-/* Dashboard-specific CRT effects */
-.dashboard-crt::before {
-  content: "";
-  position: fixed;
+/* This file is specifically for CRT effects on the dashboard */
+
+.crt-effect {
+  position: relative;
+  overflow: hidden; /* Ensures scanlines and overlay don't spill */
+}
+
+.crt-overlay {
+  position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: 
-    linear-gradient(rgba(20, 240, 116, 0.005), rgba(20, 240, 116, 0.005) 1px, transparent 1px, transparent 2px),
-    linear-gradient(90deg, rgba(20, 240, 116, 0.005), rgba(20, 240, 116, 0.005) 1px, transparent 1px, transparent 2px);
-  background-size: 100% 2px, 2px 100%;
   pointer-events: none;
-  z-index: 2;
+  z-index: 9999;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
+    linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+  background-size: 100% 2px, 3px 100%;
+  animation: crt-flicker 0.15s infinite alternate;
 }
 
-.dashboard-crt::after {
-  content: "";
-  position: fixed;
+@keyframes crt-flicker {
+  0% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0.8;
+  }
+}
+
+.scanlines {
+  position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: radial-gradient(circle, transparent 60%, rgba(0, 0, 0, 0.2) 100%);
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 1px,
+    rgba(0, 0, 0, 0.1) 1px,
+    rgba(0, 0, 0, 0.1) 2px
+  );
   pointer-events: none;
-  z-index: 2;
-}
-
-.dashboard-crt .crt-overlay {
-  background: linear-gradient(rgba(20, 240, 116, 0.01), rgba(20, 240, 116, 0.01));
-  animation: dashboard-flicker 0.15s infinite;
-}
-
-@keyframes dashboard-flicker {
-  0% { opacity: 0.997; }
-  50% { opacity: 1; }
-  100% { opacity: 0.997; }
+  z-index: 9998;
 }

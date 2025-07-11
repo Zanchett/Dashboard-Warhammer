@@ -1,8 +1,8 @@
-'use client'
+"use client"
 
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import Dashboard from '@/components/dashboard'
+import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
+import Dashboard from "@/components/dashboard"
 
 export default function DashboardPage() {
   const [username, setUsername] = useState<string | null>(null)
@@ -11,13 +11,13 @@ export default function DashboardPage() {
   const router = useRouter()
 
   useEffect(() => {
-    const storedUsername = localStorage.getItem('username')
+    const storedUsername = localStorage.getItem("username")
     if (storedUsername) {
       setUsername(storedUsername)
       setLoading(false)
     } else {
-      setError('No username found. Redirecting to login...')
-      setTimeout(() => router.push('/'), 2000)
+      setError("No username found. Redirecting to login...")
+      setTimeout(() => router.push("/"), 2000)
     }
   }, [router])
 
@@ -29,9 +29,5 @@ export default function DashboardPage() {
     return <div>{error}</div>
   }
 
-  if (!username) {
-    return <div>No username found. Redirecting to login...</div>
-  }
-
-  return <Dashboard username={username} />
+  return <Dashboard />
 }

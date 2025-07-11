@@ -1,37 +1,34 @@
 "use server"
 
 import { Redis } from "@upstash/redis"
-import type { CharacterSheet } from "@/types/character-sheet"
+import type { Character } from "@/types/character-sheet"
 
-const redis = new Redis({
-  url: process.env.KV_REST_API_URL,
-  token: process.env.KV_REST_API_TOKEN,
-})
+const redis = Redis.fromEnv()
 
-export async function getCharacterSheet(userId: string): Promise<CharacterSheet | null> {
+export async function getCharacterSheet(
+  characterId: string,
+): Promise<{ success: boolean; character?: Character; message?: string }> {
   try {
-    const sheet = await redis.get(`character-sheet:${userId}`)
-    return sheet as CharacterSheet
+    const characterData = await redis.get<Character>(`character:${characterId}`)
+    if (characterData) {
+      return { success: true, character: characterData }
+    } else {
+      return { success: false, message: "Character not found." }
+    }
   } catch (error) {
     console.error("Error fetching character sheet:", error)
-    return null
+    return { success: false, message: "Failed to fetch character sheet." }
   }
 }
 
-export async function saveCharacterSheet(
-  userId: string,
-  sheetData: Omit<CharacterSheet, "userId" | "lastUpdated">,
-): Promise<boolean> {
+export async function updateCharacterSheet(
+  character: Character,
+): Promise<{ success: boolean; character?: Character; message?: string }> {
   try {
-    const sheet: CharacterSheet = {
-      userId,
-      ...sheetData,
-      lastUpdated: new Date().toISOString(),
-    }
-    await redis.set(`character-sheet:${userId}`, sheet)
-    return true
+    await redis.set(`character:${character.id}`, character)
+    return { success: true, character: character }
   } catch (error) {
-    console.error("Error saving character sheet:", error)
-    return false
+    console.error("Error updating character sheet:", error)
+    return { success: false, message: "Failed to update character sheet." }
   }
 }

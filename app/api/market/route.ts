@@ -1,31 +1,34 @@
-import { NextResponse } from "next/server"
 import { Redis } from "@upstash/redis"
 
-const redis = new Redis({
-  url: process.env.KV_REST_API_URL,
-  token: process.env.KV_REST_API_TOKEN,
-})
+const redis = Redis.fromEnv()
 
-export async function GET() {
-  try {
-    const items = ((await redis.get("market_items")) as any[]) || []
-    return NextResponse.json(items.filter((item) => item.isShown))
-  } catch (error) {
-    console.error("Error fetching market items:", error)
-    return NextResponse.json({ error: "Failed to fetch market items" }, { status: 500 })
-  }
+interface MarketItem {
+  id: string
+  name: string
+  description: string
+  price: number
+  stock: number
 }
 
-export async function POST(request: Request) {
-  try {
-    const newItem = await request.json()
-    const items = ((await redis.get("market_items")) as any[]) || []
-    newItem.id = Date.now().toString()
-    items.push(newItem)
-    await redis.set("market_items", items)
-    return NextResponse.json(newItem, { status: 201 })
-  } catch (error) {
-    console.error("Error adding market item:", error)
-    return NextResponse.json({ error: "Failed to add market item" }, { status: 500 })
-  }
-}
+// Seed initial market data if not present
+async function seedMarketData() {
+  const itemCount = await redis.llen('market:all_ids');
+  if (itemCount === 0) {
+    const initialItems: MarketItem[] = [
+      {
+        id: 'item1',
+        name: 'Plasma Cell',
+        description: 'Standard power cell for energy weapons.',
+        price: 50,
+        stock: 100,
+      },
+      {
+        id: 'item2',
+        name: 'Medikit',
+        description: 'Basic medical supplies for field treatment.',
+        price: 75,
+        stock: 50,
+      },
+      {
+        id: 'item3',\
+        name: 'Data-Slate

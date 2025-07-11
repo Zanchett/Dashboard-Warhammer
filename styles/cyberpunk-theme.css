@@ -1,50 +1,193 @@
 :root {
-  --colors-bg--300: #1e181e;
-  --colors-bg--500: #191a1e;
-  --colors-primary--200: #14f074;
-  --colors-primary--300: #14f074;
-  --colors-primary--500: #14f074;
-  --colors-primary--600: #0ea553;
-  --colors-primary--700: #096332;
-  --colors-primary--800: #064d26;
-  --colors-primary--900: #043d1f;
-  --colors-secondary--500: #2be4ea;
-  --colors-secondary--900: #295459;
-  --colors-tertiary--500: #fed33f;
-  --colors-on_bg--500: var(--colors-primary--500);
-  --colors-on_tertiary--500: var(--colors-bg--300);
-  --colors-on_primary--500: var(--colors-primary--200);
-  --colors-active--500: #2bfea0;
-  --fonts-primary: "Share Tech Mono", monospace;
-  --fonts-secondary: "Share Tech Mono", monospace;
-  --ui-glow: 0 0 5px var(--colors-primary--500);
-  --ui-glow-borders--500: 0 0 3px var(--colors-primary--500);
-  --ui-glow-color: currentcolor;
-  --ui-glow-text: -9px -6px 40px var(--ui-glow-color);
-  --ui-glow-text--dimmed: -9px -6px 40px var(--ui-glow-color);
-  --ui-elevation--1: 2px 2px 0 rgba(0, 0, 0, 0.8);
-  --ui-notch-amount: 1rem;
-  --ui-notch-hypotenuse: 22.627416px;
-  --ui-notch-path: polygon(
-    0 0,
-    100% 0,
-    100% calc(100% - var(--ui-notch-amount) + 2px),
-    calc(100% - var(--ui-notch-amount) + 2px) 100%,
-    0 100%
-  );
+  --neon-green: #00ff00;
+  --dark-bg: #0a0a0a;
+  --darker-bg: #1a1a1a;
+  --accent-red: #ff0000;
+  --text-color: var(--neon-green);
+  --border-color: var(--neon-green);
+  --shadow-color: var(--neon-green);
 }
 
 body {
-  background-color: var(--colors-bg--500);
-  background-image: radial-gradient(
-    ellipse at 33% 10%,
-    var(--colors-primary--800) 0%,
-    transparent 75%
-  );
-  background-repeat: no-repeat;
-  color: var(--colors-on_bg--500);
-  font-family: var(--fonts-primary);
-  font-size: 100%;
-  line-height: 1.4;
-  min-height: 100vh;
+  background-color: var(--dark-bg);
+  color: var(--text-color);
+  font-family: "Share Tech Mono", monospace;
+  text-shadow: 0 0 5px var(--shadow-color);
+}
+
+/* General button styling */
+.btn-cyberpunk {
+  background-color: var(--neon-green);
+  color: var(--dark-bg);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-family: "Share Tech Mono", monospace;
+  font-weight: bold;
+  text-shadow: none;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.btn-cyberpunk:hover {
+  background-color: #00cc00;
+  box-shadow: 0 0 15px var(--shadow-color);
+}
+
+.btn-cyberpunk:active {
+  background-color: #009900;
+  box-shadow: 0 0 10px var(--shadow-color) inset;
+}
+
+/* Input field styling */
+.input-cyberpunk {
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  background-color: var(--dark-bg);
+  color: var(--text-color);
+  border-radius: 5px;
+  font-family: "Share Tech Mono", monospace;
+}
+
+.input-cyberpunk:focus {
+  outline: none;
+  box-shadow: 0 0 8px var(--shadow-color);
+}
+
+/* Card/Panel styling */
+.panel-cyberpunk {
+  background-color: var(--darker-bg);
+  padding: 20px;
+  border-radius: 10px;
+  border: 2px solid var(--border-color);
+  box-shadow: 0 0 20px var(--shadow-color);
+}
+
+/* Text styling */
+.text-neon {
+  color: var(--neon-green);
+  text-shadow: 0 0 8px var(--shadow-color);
+}
+
+.text-red-neon {
+  color: var(--accent-red);
+  text-shadow: 0 0 8px var(--accent-red);
+}
+
+/* Utility classes for common cyberpunk effects */
+.flicker-text {
+  animation: flicker 1s infinite alternate;
+}
+
+@keyframes flicker {
+  0% {
+    text-shadow: 0 0 5px var(--shadow-color);
+  }
+  50% {
+    text-shadow: 0 0 10px var(--shadow-color), 0 0 15px var(--shadow-color);
+  }
+  100% {
+    text-shadow: 0 0 5px var(--shadow-color);
+  }
+}
+
+/* Specific styles for shadcn components to match theme */
+.button {
+  @apply bg-[var(--neon-green)] text-[var(--dark-bg)] border-none;
+  @apply hover:bg-[#00cc00] hover:shadow-[0_0_15px_var(--shadow-color)];
+  @apply active:bg-[#009900] active:shadow-[inset_0_0_10px_var(--shadow-color)];
+  font-family: "Share Tech Mono", monospace;
+  font-weight: bold;
+  text-shadow: none;
+}
+
+.input {
+  @apply border-[var(--border-color)] bg-[var(--dark-bg)] text-[var(--text-color)];
+  @apply focus:outline-none focus:shadow-[0_0_8px_var(--shadow-color)];
+  font-family: "Share Tech Mono", monospace;
+}
+
+.card {
+  @apply bg-[var(--darker-bg)] border-[var(--border-color)] shadow-[0_0_20px_var(--shadow-color)];
+}
+
+.dialog-content {
+  @apply bg-[var(--darker-bg)] border-[var(--border-color)] shadow-[0_0_20px_var(--shadow-color)] text-[var(--text-color)];
+}
+
+.label {
+  @apply text-[var(--text-color)];
+}
+
+.toggle {
+  @apply bg-[var(--dark-bg)] border-[var(--border-color)] text-[var(--text-color)];
+  @apply data-[state=on]:bg-[var(--neon-green)] data-[state=on]:text-[var(--dark-bg)];
+  @apply hover:bg-[#00cc00] hover:shadow-[0_0_15px_var(--shadow-color)];
+  @apply active:bg-[#009900] active:shadow-[inset_0_0_10px_var(--shadow-color)];
+}
+
+.progress-root {
+  @apply relative h-2 w-full overflow-hidden rounded-full bg-[var(--darker-bg)] border border-[var(--border-color)];
+}
+
+.progress-indicator {
+  @apply h-full w-full flex-1 bg-[var(--neon-green)] transition-all;
+  box-shadow: 0 0 8px var(--shadow-color);
+}
+
+.slider-track {
+  @apply relative h-2 w-full grow overflow-hidden rounded-full bg-[var(--darker-bg)] border border-[var(--border-color)];
+}
+
+.slider-range {
+  @apply absolute h-full bg-[var(--neon-green)];
+  box-shadow: 0 0 8px var(--shadow-color);
+}
+
+.slider-thumb {
+  @apply block h-5 w-5 rounded-full border-2 border-[var(--neon-green)] bg-[var(--dark-bg)] ring-offset-[var(--dark-bg)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--neon-green)] focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50;
+  box-shadow: 0 0 8px var(--shadow-color);
+}
+
+.scroll-area-viewport {
+  @apply h-full w-full rounded-[inherit];
+}
+
+.scroll-area-scrollbar {
+  @apply flex touch-none select-none transition-colors;
+  @apply bg-[var(--darker-bg)] border border-[var(--border-color)];
+}
+
+.scroll-area-thumb {
+  @apply relative flex-1 rounded-full bg-[var(--neon-green)];
+  box-shadow: 0 0 5px var(--shadow-color);
+}
+
+.separator {
+  @apply shrink-0 bg-[var(--border-color)];
+}
+
+.toast-viewport {
+  @apply fixed top-0 z-[100] flex max-h-screen w-full flex-col-reverse p-4 sm:bottom-0 sm:right-0 sm:flex-col md:max-w-[420px];
+}
+
+.toast {
+  @apply group pointer-events-auto relative flex w-full items-center justify-between space-x-4 overflow-hidden rounded-md border border-[var(--border-color)] p-6 pr-8 shadow-lg transition-all data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-80 data-[state=closed]:slide-out-to-right-full data-[state=open]:slide-in-from-top-full data-[state=open]:sm:slide-in-from-bottom-full;
+  @apply bg-[var(--darker-bg)] text-[var(--text-color)];
+}
+
+.toast-title {
+  @apply text-sm font-semibold;
+}
+
+.toast-description {
+  @apply text-sm opacity-90;
+}
+
+.toast-action {
+  @apply inline-flex h-8 shrink-0 items-center justify-center rounded-md border border-[var(--border-color)] bg-[var(--dark-bg)] px-3 text-sm font-medium ring-offset-[var(--dark-bg)] transition-colors hover:bg-[var(--neon-green)] hover:text-[var(--dark-bg)] focus:outline-none focus:ring-2 focus:ring-[var(--neon-green)] focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 group-[.destructive]:border-red-500 group-[.destructive]:hover:bg-red-500 group-[.destructive]:hover:text-white group-[.destructive]:focus:ring-red-500;
+}
+
+.toast-close {
+  @apply absolute right-2 top-2 rounded-md p-1 text-[var(--text-color)] opacity-90 ring-offset-[var(--dark-bg)] transition-opacity hover:text-[var(--neon-green)] focus:outline-none focus:ring-2 focus:ring-[var(--neon-green)] focus:ring-offset-2 group-hover:opacity-100;
 }

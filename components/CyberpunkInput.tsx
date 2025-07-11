@@ -1,39 +1,22 @@
-import React, { useState } from 'react';
-import { IconFeedAdd } from './icons';
+import React from "react"
+import { cn } from "@/lib/utils"
 
-interface CyberpunkInputProps {
-  onSubmit: (value: string) => void;
-  placeholder?: string;
-}
+export interface CyberpunkInputProps extends React.InputHTMLAttributes<HTMLInputElement> {}
 
-export const CyberpunkInput: React.FC<CyberpunkInputProps> = ({ onSubmit, placeholder = "Enter Empire ID" }) => {
-  const [inputValue, setInputValue] = useState('');
-  const [isActive, setIsActive] = useState(false);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (inputValue.trim()) {
-      onSubmit(inputValue.trim());
-      setInputValue('');
-    }
-  };
-
+const CyberpunkInput = React.forwardRef<HTMLInputElement, CyberpunkInputProps>(({ className, type, ...props }, ref) => {
   return (
-    <form onSubmit={handleSubmit} className="cyberpunk-input-container">
-      <div className={`cyberpunk-input ${isActive ? 'active' : ''}`}>
-        <input
-          type="text"
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          onFocus={() => setIsActive(true)}
-          onBlur={() => setIsActive(false)}
-          placeholder={placeholder}
-          className="cyberpunk-input__field"
-        />
-        <button type="submit" className="cyberpunk-input__button">
-          <IconFeedAdd className="cyberpunk-input__icon" />
-        </button>
-      </div>
-    </form>
-  );
-};
+    <input
+      type={type}
+      className={cn(
+        "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+        "input-cyberpunk", // Apply the cyberpunk-specific styling
+        className,
+      )}
+      ref={ref}
+      {...props}
+    />
+  )
+})
+CyberpunkInput.displayName = "CyberpunkInput"
+
+export { CyberpunkInput }

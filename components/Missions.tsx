@@ -1,151 +1,191 @@
-import React, { useState, useEffect } from 'react';
-import { ScrollArea } from "@/components/ui/scroll-area"
+"use client"
+
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { useToast } from "@/components/ui/use-toast"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { useToast } from "@/hooks/use-toast"
+import { Icons } from "./icons"
+import "../styles/missions.css"
+import type { Mission } from "@/types/missions"
+import { getMissions, createMission, toggleMissionStatus } from "@/app/actions/missions"
 
-interface Mission {
-  id: string;
-  title: string;
-  description: string;
-  difficulty: 'Easy' | 'Medium' | 'Hard';
-  reward: number;
-  status: 'AVAILABLE' | 'ACTIVE' | 'COMPLETED' | 'ABORTED';
-  briefing: string;
-  assignedBy: string;
-  hexCode: string;
-}
+export default function Missions() {
+  const [missions, setMissions] = useState<Mission[]>([])
+  const [newMissionTitle, setNewMissionTitle] = useState("")
+  const [newMissionDescription, setNewMissionDescription] = useState("")
+  const [newMissionReward, setNewMissionReward] = useState<number>(0)
+  const [loading, setLoading] = useState(true)
+  const { toast } = useToast()
 
-interface MissionsProps {
-  username: string;
-}
-
-const Missions: React.FC<MissionsProps> = ({ username }) => {
-  const [missions, setMissions] = useState<Mission[]>([]);
-  const [selectedMission, setSelectedMission] = useState<Mission | null>(null);
-  const [activeCategory, setActiveCategory] = useState<Mission['status']>('AVAILABLE');
-  const { toast } = useToast();
-
-  useEffect(() => {
-    const fetchMissions = async () => {
-      try {
-        const response = await fetch('/api/missions');
-        if (response.ok) {
-          const data = await response.json();
-          setMissions(data);
-        } else {
-          throw new Error('Failed to fetch missions');
-        }
-      } catch (error) {
-        console.error('Error fetching missions:', error);
+  const fetchMissions = async () => {
+    setLoading(true)
+    try {
+      const result = await getMissions()
+      if (result.success && result.missions) {
+        setMissions(result.missions)
+      } else {
         toast({
           title: "Error",
-          description: "Failed to fetch missions",
+          description: result.message || "Failed to fetch missions.",
           variant: "destructive",
-        });
+        })
       }
-    };
+    } catch (error) {
+      console.error("Error fetching missions:", error)
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred while fetching missions.",
+        variant: "destructive",
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
 
-    fetchMissions();
-  }, []);
+  useEffect(() => {
+    fetchMissions()
+  }, [])
 
-  const handleSelectMission = (mission: Mission) => {
-    setSelectedMission(mission);
-  };
+  const handleCreateMission = async () => {
+    if (!newMissionTitle || !newMissionDescription || newMissionReward <= 0) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all mission details and ensure reward is positive.",
+        variant: "destructive",
+      })
+      return
+    }
 
-  const handleAcceptMission = (missionId: string) => {
-    setMissions(prevMissions =>
-      prevMissions.map(mission =>
-        mission.id === missionId ? { ...mission, status: 'ACTIVE' } : mission
-      )
-    );
-    setActiveCategory('ACTIVE');
-    toast({
-      title: "Mission Accepted",
-      description: "The Emperor protects. Go forth and serve.",
-    });
-  };
+    const missionData: Omit<Mission, "id" | "status"> = {
+      title: newMissionTitle,
+      description: newMissionDescription,
+      rewardCredits: newMissionReward,
+    }
 
-  const filteredMissions = missions.filter(mission => mission.status === activeCategory);
+    try {
+      const result = await createMission(missionData)
+      if (result.success && result.mission) {
+        setMissions((prev) => [...prev, result.mission!])
+        setNewMissionTitle("")
+        setNewMissionDescription("")
+        setNewMissionReward(0)
+        toast({
+          title: "Mission Created",
+          description: `Mission "${result.mission.title}" has been successfully created.`,
+        })
+      } else {
+        toast({
+          title: "Error",
+          description: result.message || "Failed to create mission.",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      console.error("Error creating mission:", error)
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred while creating mission.",
+        variant: "destructive",
+      })
+    }
+  }
 
-  const categories: { [key: string]: string } = {
-    'AVAILABLE': 'AVAILABLE ASSIGNMENTS',
-    'ACTIVE': 'ACTIVE OPERATIONS',
-    'COMPLETED': 'COMPLETED MISSIONS',
-    'ABORTED': 'ABORTED OPERATIONS'
-  };
+  const handleToggleStatus = async (missionId: string, currentStatus: Mission["status"]) => {
+    const newStatus = currentStatus === "active" ? "completed" : "active"
+    try {
+      const result = await toggleMissionStatus(missionId, newStatus)
+      if (result.success && result.mission) {
+        setMissions((prev) => prev.map((m) => (m.id === missionId ? { ...m, status: newStatus } : m)))
+        toast({
+          title: "Mission Updated",
+          description: `Mission "${result.mission.title}" status updated to ${newStatus}.`,
+        })
+      } else {
+        toast({
+          title: "Error",
+          description: result.message || "Failed to update mission status.",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      console.error("Error toggling mission status:", error)
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred while updating mission status.",
+        variant: "destructive",
+      })
+    }
+  }
 
   return (
-    <div className="cogitator-missions">
-      <div className="terminal-header">
-        <div className="header-title">COGITATOR INTERFACE v2.781</div>
-        <div className="header-status">MISSION DATABASE ACCESS: GRANTED</div>
+    <div className="missions-container panel-cyberpunk">
+      <h2 className="text-neon text-2xl mb-6 text-center">Mission Control</h2>
+
+      <div className="create-mission-section">
+        <h3 className="text-neon text-xl mb-4">Create New Mission</h3>
+        <div className="grid grid-cols-1 gap-4">
+          <Input
+            placeholder="Mission Title"
+            value={newMissionTitle}
+            onChange={(e) => setNewMissionTitle(e.target.value)}
+            className="input-cyberpunk"
+          />
+          <Textarea
+            placeholder="Mission Description"
+            value={newMissionDescription}
+            onChange={(e) => setNewMissionDescription(e.target.value)}
+            className="input-cyberpunk min-h-[80px]"
+          />
+          <Input
+            type="number"
+            placeholder="Reward Credits"
+            value={newMissionReward === 0 ? "" : newMissionReward}
+            onChange={(e) => setNewMissionReward(Number.parseInt(e.target.value) || 0)}
+            className="input-cyberpunk"
+          />
+          <Button onClick={handleCreateMission} className="btn-cyberpunk">
+            <Icons.plus className="mr-2 h-5 w-5" /> Create Mission
+          </Button>
+        </div>
       </div>
 
-      <div className="missions-layout">
-        <div className="mission-categories">
-          {Object.entries(categories).map(([key, value]) => (
-            <div 
-              key={key}
-              className={`category-tab ${activeCategory === key ? 'active' : ''}`}
-              onClick={() => setActiveCategory(key as Mission['status'])}
-            >
-              {value}
-            </div>
-          ))}
-        </div>
-
-        <div className="mission-list">
-          <ScrollArea className="h-[calc(100vh-250px)]">
-            {missions.filter(mission => mission.status === 'AVAILABLE').map(mission => (
-              <div 
-                key={mission.id} 
-                className={`mission-entry ${selectedMission?.id === mission.id ? 'selected' : ''}`}
-                onClick={() => handleSelectMission(mission)}
-              >
-                <span className="hex-prefix">{mission.hexCode}</span>
-                <span className="mission-title">{mission.title}</span>
+      <div className="mission-list-section">
+        <h3 className="text-neon text-xl mb-4">Mission List</h3>
+        {loading ? (
+          <p className="text-center text-neon">Loading missions...</p>
+        ) : missions.length === 0 ? (
+          <p className="text-center text-muted-foreground">No missions found.</p>
+        ) : (
+          <ScrollArea className="h-[300px] pr-4">
+            {missions.map((mission) => (
+              <div key={mission.id} className="mission-item">
+                <div className="mission-details">
+                  <h4 className="mission-title">{mission.title}</h4>
+                  <p className="mission-description">{mission.description}</p>
+                  <p className="mission-reward">
+                    Reward: <span className="text-neon">{mission.rewardCredits} ℣</span>
+                  </p>
+                  <p className="mission-status">
+                    Status:{" "}
+                    <span className={mission.status === "active" ? "text-yellow-500" : "text-green-500"}>
+                      {mission.status.toUpperCase()}
+                    </span>
+                  </p>
+                </div>
+                <Button
+                  onClick={() => handleToggleStatus(mission.id, mission.status)}
+                  className={`btn-cyberpunk ${mission.status === "active" ? "bg-yellow-600 hover:bg-yellow-700" : "bg-green-600 hover:bg-green-700"}`}
+                >
+                  <Icons.check className="mr-2 h-5 w-5" />{" "}
+                  {mission.status === "active" ? "Mark Completed" : "Mark Active"}
+                </Button>
               </div>
             ))}
           </ScrollArea>
-        </div>
-
-        <div className="mission-details" style={{display: 'flex', flexDirection: 'column', justifyContent: 'space-between'}}>
-          {selectedMission ? (
-            <>
-              <div className="mission-header">
-                <span className="hex-prefix">{selectedMission.hexCode}</span>
-                <span className="mission-title">{selectedMission.title}</span>
-              </div>
-              <div className="mission-content" style={{flexGrow: 1, overflowY: 'auto'}}>
-                <div className="mission-briefing">
-                  {selectedMission.briefing}
-                </div>
-                <div className="mission-signature">
-                  [TRANSMISSION_END]
-                  <br />
-                  ++{selectedMission.assignedBy}++
-                </div>
-                <div className="mission-metadata">
-                  <div>DIFFICULTY: {selectedMission.difficulty}</div>
-                  <div>REWARD: {selectedMission.reward} CREDITS</div>
-                  <div>STATUS: {selectedMission.status}</div>
-                </div>
-              </div>
-              <Button 
-                onClick={() => handleAcceptMission(selectedMission.id)}
-                className="execute-button"
-                disabled={selectedMission.status !== 'AVAILABLE'}
-              >
-                {selectedMission.status === 'AVAILABLE' ? 'EXECUTE_ACCEPT_MISSION' : 'MISSION_LOCKED'}
-              </Button>
-            </>
-          ) : (
-            <div className="no-selection">SELECT MISSION FILE TO VIEW BRIEFING</div>
-          )}
-        </div>
+        )}
       </div>
     </div>
-  );
-};
-
-export default Missions;
+  )
+}

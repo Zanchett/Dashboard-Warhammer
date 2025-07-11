@@ -1,126 +1,110 @@
-import React, { useState, useEffect, useRef } from 'react';
+"use client"
+
+import type React from "react"
+
+import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { useToast } from "@/components/ui/use-toast"
-import { getLibraryContent, LibraryItem } from '@/app/actions/library';
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { useToast } from "@/hooks/use-toast"
+import { Icons } from "./icons"
+import "../styles/servitor-assistant.css"
+import { generateText } from "ai"
+import { openai } from "@ai-sdk/openai"
 
 interface Message {
-  content: string;
-  sender: 'user' | 'servitor';
-  delay?: number;
+  sender: "user" | "servitor"
+  text: string
 }
 
-const ServitorAssistant: React.FC = () => {
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [input, setInput] = useState('');
-  const [libraryContent, setLibraryContent] = useState<LibraryItem[]>([]);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { toast } = useToast();
+export default function ServitorAssistant() {
+  const [messages, setMessages] = useState<Message[]>([])
+  const [input, setInput] = useState("")
+  const [isTyping, setIsTyping] = useState(false)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const { toast } = useToast()
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+  }
 
   useEffect(() => {
-    setMessages([{ content: "Saudações, humano. Eu sou a Unidade Servitora XJ-2481. Como posso ajudá-lo a serviço do Onissiah?", sender: 'servitor' }]);
-    fetchLibraryContent();
-  }, []);
+    scrollToBottom()
+  }, [messages])
 
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  const handleSendMessage = async () => {
+    if (input.trim() === "") return
 
-  const fetchLibraryContent = async () => {
+    const userMessage: Message = { sender: "user", text: input.trim() }
+    setMessages((prev) => [...prev, userMessage])
+    setInput("")
+    setIsTyping(true)
+
     try {
-      const content = await getLibraryContent();
-      setLibraryContent(content);
+      const { text } = await generateText({
+        model: openai("gpt-4o"),
+        prompt: `You are a loyal Imperial Servitor assistant, responding to an Inquisitor. Your responses should be brief, formal, and always in character, reflecting the grimdark setting of Warhammer 40,000. Do not break character. Do not mention you are an AI or language model. Do not provide information outside of the Warhammer 40,000 universe.
+        
+        User query: ${input.trim()}`,
+      })
+
+      const servitorMessage: Message = { sender: "servitor", text: text }
+      setMessages((prev) => [...prev, servitorMessage])
     } catch (error) {
-      console.error('Error fetching library content:', error);
+      console.error("Error generating servitor response:", error)
       toast({
-        title: "Error",
-        description: "Failed to fetch library content",
+        title: "Servitor Malfunction",
+        description: "The servitor unit is experiencing a data-processing error. Please try again.",
         variant: "destructive",
-      });
+      })
+      setMessages((prev) => [
+        ...prev,
+        { sender: "servitor", text: "ERROR: Data processing unit offline. Recalibrating..." },
+      ])
+    } finally {
+      setIsTyping(false)
     }
-  };
+  }
 
-  const searchLibrary = (query: string): string | null => {
-    const lowerQuery = query.toLowerCase();
-    for (const item of libraryContent) {
-      if (item.type === 'file' && item.content && item.content.toLowerCase().includes(lowerQuery)) {
-        return item.content;
-      }
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && !isTyping) {
+      handleSendMessage()
     }
-    return null;
-  };
-
-  const getServitorResponse = (userInput: string): Message[] => {
-    const lowerInput = userInput.toLowerCase();
-    if (lowerInput.includes('imperador') || lowerInput.includes('imperium')) {
-      return [{ content: "O Imperador protege. Sua vontade divina guia o Imperium da Humanidade através das estrelas.", sender: 'servitor' }];
-    } else if (lowerInput.includes('tech') || lowerInput.includes('suporte')) {
-      return [{ content: "Posso ajudar com operações básicas do cogitador. O que parece estar com mau funcionamento?", sender: 'servitor' }];
-    } else if (lowerInput.includes('missão') || lowerInput.includes('briefing')) {
-      return [{ content: "Acessando dados da missão... Erro. Nível de autorização insuficiente. Por favor, consulte seu oficial comandante para detalhes da missão.", sender: 'servitor' }];
-    } else {
-      const libraryResult = searchLibrary(lowerInput);
-      if (libraryResult) {
-        return [
-          { content: "Encontrei esta informação nos registros:", sender: 'servitor', delay: 1000 },
-          { content: libraryResult, sender: 'servitor', delay: 2000 }
-        ];
-      }
-      return [{ content: "Desculpe, meus bancos de conhecimento não contêm informações relevantes. Por favor, reformule sua consulta ou consulte um Tecno-Sacerdote para mais assistência.", sender: 'servitor' }];
-    }
-  };
-
-  const handleSend = () => {
-    if (input.trim()) {
-      setMessages(prev => [...prev, { content: input, sender: 'user' }]);
-      setInput('');
-      const servitorResponses = getServitorResponse(input);
-      servitorResponses.forEach((response, index) => {
-        setTimeout(() => {
-          setMessages(prev => [...prev, response]);
-        }, (response.delay || 1000) * (index + 1));
-      });
-    }
-  };
+  }
 
   return (
-    <div className="servitor-assistant">
-      <div className="terminal-outer-frame">
-        <div className="terminal-inner-frame">
-          <div className="terminal-header">
-            <span>SERVITOR ASSISTANT XJ-2481</span>
-            <span>STATUS: ONLINE</span>
-          </div>
-
-          <div className="terminal-content">
-            {messages.map((message, index) => (
-              <div key={index} className={`message ${message.sender}`}>
-                <span className="message-prefix">{message.sender === 'user' ? 'USER>' : 'XJ-2481>'}</span>
-                <span className="message-content">{message.content}</span>
-              </div>
-            ))}
-            <div ref={messagesEndRef} />
-          </div>
-
-          <div className="terminal-input-area">
-            <div className="input-line">
-              <span className="input-prefix">&gt;</span>
-              <Input
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-                placeholder="Digite sua pergunta..."
-                className="terminal-input"
-              />
+    <div className="servitor-assistant-container panel-cyberpunk">
+      <h2 className="text-neon text-2xl mb-4 text-center">Servitor Assistant Unit</h2>
+      <ScrollArea className="message-area">
+        <div className="p-4">
+          {messages.length === 0 && <p className="text-center text-muted-foreground">Awaiting Imperial command.</p>}
+          {messages.map((msg, index) => (
+            <div key={index} className={`message-bubble ${msg.sender}-message`}>
+              <span className="message-sender">{msg.sender === "user" ? "Inquisitor" : "Servitor"}:</span> {msg.text}
             </div>
-            <Button onClick={handleSend} className="execute-button">
-              EXECUTE
-            </Button>
-          </div>
+          ))}
+          {isTyping && (
+            <div className="message-bubble servitor-message typing-indicator">
+              <span className="message-sender">Servitor:</span> Processing...
+            </div>
+          )}
+          <div ref={messagesEndRef} />
         </div>
+      </ScrollArea>
+      <div className="input-area">
+        <Input
+          type="text"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyPress={handleKeyPress}
+          placeholder="Enter command for Servitor..."
+          className="input-cyberpunk flex-grow"
+          disabled={isTyping}
+        />
+        <Button onClick={handleSendMessage} disabled={isTyping} className="btn-cyberpunk">
+          <Icons.check className="h-5 w-5" />
+        </Button>
       </div>
     </div>
-  );
-};
-
-export default ServitorAssistant;
+  )
+}

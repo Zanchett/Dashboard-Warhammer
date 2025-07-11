@@ -1,44 +1,63 @@
-import i18n from 'i18next';
-import { initReactI18next } from 'react-i18next';
-import LanguageDetector from 'i18next-browser-languagedetector';
+"use client"
 
-const resources = {
-  en: {
-    translation: {
-      system: {
-        title: "System",
-        language: "Language"
-      },
-      dashboard: {
-        title: "Dashboard",
-        welcome: "Welcome to the Imperium's Dataslate",
-        stats: {
-          title: "Statistics",
-          missions: "Missions Completed",
-          rank: "Current Rank",
-          experience: "Experience Points"
+import { useState, useEffect } from "react"
+
+type TranslationKey = string
+type TranslationValue = string | ((args: Record<string, string | number>) => string)
+type Translations = Record<TranslationKey, TranslationValue>
+
+const translationsCache: { [key: string]: Translations } = {}
+
+export function useTranslation(namespace = "translation") {
+  const [currentLocale, setCurrentLocale] = useState("en") // Default locale
+  const [translations, setTranslations] = useState<Translations>({})
+
+  useEffect(() => {
+    const loadTranslations = async () => {
+      if (translationsCache[currentLocale]?.[namespace]) {
+        setTranslations(translationsCache[currentLocale][namespace])
+        return
+      }
+
+      try {
+        const response = await fetch(`/locales/${currentLocale}/${namespace}.json`)
+        if (!response.ok) {
+          throw new Error(`Failed to load translations for ${currentLocale}/${namespace}.json`)
         }
-      },
-      common: {
-        loading: "Loading...",
-        error: "An error occurred",
-        save: "Save",
-        cancel: "Cancel"
+        const data: Translations = await response.json()
+        if (!translationsCache[currentLocale]) {
+          translationsCache[currentLocale] = {}
+        }
+        translationsCache[currentLocale][namespace] = data
+        setTranslations(data)
+      } catch (error) {
+        console.error("Error loading translations:", error)
+        // Fallback to empty translations or default English if loading fails
+        setTranslations({})
       }
     }
-  }
-};
 
-i18n
-  .use(LanguageDetector)
-  .use(initReactI18next)
-  .init({
-    resources,
-    fallbackLng: 'en',
-    debug: true,
-    interpolation: {
-      escapeValue: false,
+    loadTranslations()
+  }, [currentLocale, namespace])
+
+  const t = (key: TranslationKey, args?: Record<string, string | number>): string => {
+    const value = translations[key]
+    if (typeof value === "function") {
+      return value(args || {})
     }
-  });
+    let translatedText = typeof value === "string" ? value : key
 
-export default i18n;
+    if (args) {
+      for (const argKey in args) {
+        translatedText = translatedText.replace(new RegExp(`{{${argKey}}}`, "g"), String(args[argKey]))
+      }
+    }
+    return translatedText
+  }
+
+  const changeLanguage = (locale: string) => {
+    setCurrentLocale(locale)
+  }
+
+  return { t, currentLocale, changeLanguage }
+}

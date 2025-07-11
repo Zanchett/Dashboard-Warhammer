@@ -1,23 +1,19 @@
-import { NextResponse } from 'next/server';
-import { findUser } from '@/lib/users';
+import { NextResponse } from "next/server"
+import { getUserByUsername } from "@/lib/users"
 
-export async function POST(request: Request) {
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url)
+  const username = searchParams.get("username")
+
+  if (!username) {
+    return NextResponse.json({ message: "Username is required" }, { status: 400 })
+  }
+
   try {
-    const { userId } = await request.json();
-    
-    if (!userId) {
-      return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
-    }
-
-    const user = await findUser(userId);
-
-    if (user) {
-      return NextResponse.json({ message: 'User found' });
-    } else {
-      return NextResponse.json({ error: 'No user found with this Empire ID' }, { status: 404 });
-    }
+    const user = await getUserByUsername(username)
+    return NextResponse.json({ exists: !!user })
   } catch (error) {
-    console.error('Error checking user:', error);
-    return NextResponse.json({ error: 'An error occurred while checking the user' }, { status: 500 });
+    console.error("Error checking username:", error)
+    return NextResponse.json({ message: "Internal server error" }, { status: 500 })
   }
 }

@@ -1,9 +1,5 @@
-import LoginScreen from '../components/login-screen'
+import LoginScreen from "@/components/login-screen"
 
-export default function Home() {
-  return (
-    <main>
-      <LoginScreen />
-    </main>
-  )
+export default function LoginPage() {
+  return <LoginScreen />
 }

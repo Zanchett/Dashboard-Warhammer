@@ -1,18 +1,24 @@
 import { NextResponse } from "next/server"
 import { Redis } from "@upstash/redis"
 
-const redis = new Redis({
-  url: process.env.KV_REST_API_URL,
-  token: process.env.KV_REST_API_TOKEN,
-})
+const redis = Redis.fromEnv()
 
 export async function GET() {
   try {
-    await redis.set("test-key", "Hello, Redis!")
-    const value = await redis.get("test-key")
-    return NextResponse.json({ success: true, value })
+    // Test setting and getting a value
+    await redis.set("test_key", "test_value")
+    const value = await redis.get("test_key")
+
+    if (value === "test_value") {
+      return NextResponse.json({ message: "Database connection successful!", value })
+    } else {
+      return NextResponse.json({ message: "Database connection failed: Value mismatch.", value }, { status: 500 })
+    }
   } catch (error) {
-    console.error("Database test failed:", error)
-    return NextResponse.json({ success: false, error: "Database connection failed" }, { status: 500 })
+    console.error("Database connection test failed:", error)
+    return NextResponse.json(
+      { message: "Database connection failed.", error: (error as Error).message },
+      { status: 500 },
+    )
   }
 }

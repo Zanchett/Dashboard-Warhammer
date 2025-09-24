@@ -1,10 +1,12 @@
 .admin-panel {
-  color: #1aff8c;
   font-family: 'Share Tech Mono', monospace;
-  background-color: var(--color-bg);
+  color: #1aff8c;
+  background-color: #000000;
   min-height: 100vh;
   padding: 1rem;
   position: relative;
+  overflow: hidden;
+  animation: flicker 5s infinite;
 }
 
 .admin-panel::before {
@@ -29,70 +31,181 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: radial-gradient(circle at center, transparent 60%, rgba(0, 0, 0, 0.4) 100%);
+  background: linear-gradient(
+    transparent 50%,
+    rgba(0, 0, 0, 0.05) 50%
+  );
+  background-size: 100% 4px;
   pointer-events: none;
   z-index: 2;
 }
 
-.admin-panel > * {
-  position: relative;
-  z-index: 3;
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  border: 1px solid #1aff8c;
+  background-color: rgba(26, 255, 140, 0.1);
+  margin-bottom: 1rem;
 }
 
-.admin-panel h1, .admin-panel h2, .admin-panel h3 {
+.admin-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-shadow: 0 0 10px rgba(26, 255, 140, 0.5);
+}
+
+.admin-status {
+  font-size: 1rem;
+}
+
+.admin-tabs {
+  border: 1px solid #1aff8c;
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+.admin-tabs-list {
+  display: flex;
+  border-bottom: 1px solid #1aff8c;
+}
+
+.admin-tabs-list [data-state="active"] {
+  background-color: rgba(26, 255, 140, 0.2);
+  box-shadow: 0 0 10px rgba(26, 255, 140, 0.3);
+}
+
+.admin-content {
+  padding: 1rem;
+}
+
+.admin-input,
+.admin-select,
+.admin-textarea {
+  background-color: rgba(0, 0, 0, 0.5);
+  border: 1px solid #1aff8c;
   color: #1aff8c;
-  text-shadow: 0 0 5px rgba(26, 255, 140, 0.5);
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+  width: 100%;
+  font-family: 'Share Tech Mono', monospace;
 }
 
-.admin-panel .card {
-  background-color: rgba(0, 20, 0, 0.95);
-  border: 1px solid rgba(26, 255, 140, 0.3);
-  box-shadow: 0 0 10px rgba(26, 255, 140, 0.1);
+.admin-input:focus,
+.admin-select:focus,
+.admin-textarea:focus {
+  outline: none;
+  box-shadow: 0 0 5px rgba(26, 255, 140, 0.5);
 }
 
-.admin-panel .button {
+.admin-button {
   background-color: rgba(26, 255, 140, 0.1);
   border: 1px solid #1aff8c;
   color: #1aff8c;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
   transition: all 0.3s ease;
 }
 
-.admin-panel .button:hover {
+.admin-button:hover {
   background-color: rgba(26, 255, 140, 0.2);
   box-shadow: 0 0 10px rgba(26, 255, 140, 0.5);
 }
 
-.admin-panel input {
+.admin-button.delete:hover {
+  background-color: rgba(255, 20, 20, 0.3);
+}
+
+.admin-scrollarea {
+  height: 300px;
+  overflow-y: auto;
+  border: 1px solid #1aff8c;
+}
+
+.section-title {
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+  text-shadow: 0 0 5px rgba(26, 255, 140, 0.5);
+}
+
+.admin-missions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.mission-form,
+.mission-list {
   background-color: rgba(0, 0, 0, 0.5);
   border: 1px solid #1aff8c;
-  color: #1aff8c;
+  padding: 1rem;
 }
 
-.admin-panel input:focus {
-  box-shadow: 0 0 5px rgba(26, 255, 140, 0.5);
+.mission-entry {
+  padding: 0.5rem;
+  border-bottom: 1px solid rgba(26, 255, 140, 0.2);
 }
 
-.admin-panel .tabs {
-  border-bottom-color: rgba(26, 255, 140, 0.3);
+.mission-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
 }
 
-.admin-panel .tab {
-  color: #1aff8c;
+.mission-title {
+  font-weight: bold;
 }
 
-.admin-panel .tab[data-state="active"] {
-  border-bottom-color: #1aff8c;
-  box-shadow: 0 0 5px rgba(26, 255, 140, 0.5);
+.mission-hexcode {
+  font-family: monospace;
+  color: #60A5FA;
 }
 
-/* CRT effect */
+.mission-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+/* Add scanline effect */
+@keyframes scanline {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(100%);
+  }
+}
+
+/* Add screen flicker animation */
 @keyframes flicker {
   0% { opacity: 0.99; }
-  50% { opacity: 1; }
-  100% { opacity: 0.99; }
+  5% { opacity: 0.95; }
+  10% { opacity: 0.99; }
+  15% { opacity: 0.98; }
+  20% { opacity: 1; }
 }
 
-.admin-panel {
-  animation: flicker 0.15s infinite;
+.admin-panel .library-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.admin-panel .library-item-content {
+  display: flex;
+  align-items: center;
+  flex-grow: 1;
+  cursor: pointer;
+}
+
+.admin-panel .library-item-delete {
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.admin-panel .library-item:hover .library-item-delete {
+  opacity: 1;
 }
 

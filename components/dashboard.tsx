@@ -13,6 +13,7 @@ import MechanicusUpgrades from './MechanicusUpgrades';
 import Library from './Library';
 import Messages from './Messages'; // Import the Messages component
 import Contacts from './Contacts'; // Added import for Contacts component
+import Missions from './Missions'; // Added import for Missions component
 
 const useRandomValue = (min: number, max: number, interval: number) => {
   const [value, setValue] = useState(Math.random() * (max - min) + min);
@@ -128,6 +129,8 @@ export default function Dashboard({ username }: { username: string }) {
         return (
           <Contacts username={username} onStartConversation={handleStartConversation} /> // Pass the function to Contacts
         );
+      case 'missions':
+        return <Missions username={username} />;
       case 'main':
       default:
         return (
@@ -216,6 +219,7 @@ export default function Dashboard({ username }: { username: string }) {
             <span className="dropdown-trigger">SYSTEM</span>
             <div className="dropdown-content">
               <span onClick={() => setCurrentView('mechanicus-upgrades')}>Mechanicus Upgrades</span>
+              <span onClick={() => setCurrentView('missions')}>Missions</span>
             </div>
           </div>
           <div className="dropdown">

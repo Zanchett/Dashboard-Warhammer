@@ -59,12 +59,20 @@ export async function getLibraryContent(): Promise<LibraryItem[]> {
     }
 
     if (typeof content === 'string') {
-      const parsedContent = JSON.parse(content);
-      console.log('Parsed library content:', parsedContent);
-      return parsedContent;
+      try {
+        const parsedContent = JSON.parse(content);
+        console.log('Parsed library content:', parsedContent);
+        return parsedContent;
+      } catch (parseError) {
+        console.error('Error parsing JSON:', parseError);
+        return initialLibraryContent;
+      }
+    } else if (Array.isArray(content)) {
+      console.log('Content is already an array:', content);
+      return content;
     } else {
       console.log('Unexpected content type:', typeof content);
-      return content as LibraryItem[];
+      return initialLibraryContent;
     }
   } catch (error) {
     console.error('Error fetching library content:', error);
@@ -72,7 +80,6 @@ export async function getLibraryContent(): Promise<LibraryItem[]> {
       console.error('Error message:', error.message);
       console.error('Error stack:', error.stack);
     }
-    // Return the initial content if there's an error
     return initialLibraryContent;
   }
 }
@@ -107,9 +114,25 @@ export async function updateLibraryItem(item: LibraryItem): Promise<boolean> {
 
 export async function deleteLibraryItem(id: string): Promise<boolean> {
   try {
-    const content = await getLibraryContent();
-    const newContent = content.filter(item => item.id !== id);
-    await redis.set('library:content', JSON.stringify(newContent));
+    let content = await redis.get('library:content') as LibraryItem[];
+    if (!content) {
+      return false;
+    }
+
+    const itemToDelete = content.find(item => item.id === id);
+    if (!itemToDelete) {
+      return false;
+    }
+
+    // If it's a folder, delete all items inside it
+    if (itemToDelete.type === 'folder') {
+      content = content.filter(item => !item.path.includes(itemToDelete.name));
+    }
+
+    // Delete the item itself
+    content = content.filter(item => item.id !== id);
+
+    await redis.set('library:content', JSON.stringify(content));
     return true;
   } catch (error) {
     console.error('Error deleting library item:', error);

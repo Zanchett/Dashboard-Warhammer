@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { addUser, findUser } from '../../../lib/users';
+import { addUser } from '../../../lib/users';
 
 export async function POST(request: Request) {
   try {
@@ -9,12 +9,6 @@ export async function POST(request: Request) {
     if (!username || !password) {
       console.log('Missing username or password');
       return NextResponse.json({ error: 'Username and password are required' }, { status: 400 });
-    }
-
-    const existingUser = await findUser(username);
-    if (existingUser) {
-      console.log('Username already exists');
-      return NextResponse.json({ error: 'Username already exists' }, { status: 400 });
     }
 
     const newUser = await addUser(username, password);

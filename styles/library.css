@@ -125,3 +125,22 @@
   background-color: rgba(20, 240, 116, 0.5);
 }
 
+.delete-button {
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+  margin-left: 8px;
+  color: #ff4136;
+}
+
+.tree-content:hover .delete-button {
+  opacity: 1;
+}
+
+.delete-button:hover {
+  color: #ff7b6e;
+}
+

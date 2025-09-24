@@ -6,6 +6,7 @@ import '../styles/servitor-assistant.css'
 import '../styles/mechanicus-upgrades.css'
 import '../styles/library.css'
 import '../styles/messages.css'
+import '../styles/missions.css'
 import { Toaster } from 'react-hot-toast'
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -25,3 +26,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   )
 }
 
+export const metadata = {
+      generator: 'v0.app'
+    };

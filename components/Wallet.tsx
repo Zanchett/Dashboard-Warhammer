@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { getBalance, transferCredits, getTransactions, Transaction } from '@/app/actions/wallet';
 import { useToast } from "@/components/ui/use-toast";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface WalletProps {
   username: string;
@@ -97,48 +98,68 @@ const Wallet: React.FC<WalletProps> = ({ username }) => {
   }
 
   return (
-    <div className="wallet-container">
-      <h2 className="wallet-title">Wallet</h2>
-      <div className="wallet-balance">
-        <span>Credit Balance:</span>
-        <span className="balance-amount">{balance} credits</span>
+    <div className="cogitator-interface">
+      <div className="terminal-header">
+        <div className="header-title">COGITATOR INTERFACE v2.781</div>
+        <div className="header-status">WALLET ACCESS: GRANTED</div>
       </div>
-      <div className="wallet-send">
-        <Input
-          type="text"
-          placeholder="Recipient's Empire ID"
-          value={recipient}
-          onChange={(e) => setRecipient(e.target.value)}
-          className="wallet-input"
-        />
-        <Input
-          type="number"
-          placeholder="Amount"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          className="wallet-input"
-        />
-        <Button 
-          onClick={handleSend} 
-          className="wallet-button" 
-          disabled={isLoading}
-        >
-          {isLoading ? 'Processing...' : 'Send'}
-        </Button>
-      </div>
-      <div className="wallet-transactions">
-        <h3>Transaction Log</h3>
-        {transactions.length === 0 ? (
-          <div className="no-transactions">No transactions found.</div>
-        ) : (
-          transactions.map((transaction, index) => (
-            <div key={index} className="transaction-item">
-              <span>{transaction.sender === username ? 'To:' : 'From:'} {transaction.sender === username ? transaction.recipient : transaction.sender}</span>
-              <span>{transaction.sender === username ? '-' : '+'}{transaction.amount} credits</span>
-              <span>{new Date(transaction.date).toLocaleString()}</span>
-            </div>
-          ))
-        )}
+      <div className="terminal-content">
+        <div className="wallet-balance">
+          <span className="balance-label">CREDIT BALANCE:</span>
+          <span className="balance-amount">{balance} CREDITS</span>
+        </div>
+        <div className="wallet-transfer">
+          <h3 className="section-title">EXECUTE TRANSFER</h3>
+          <div className="input-section">
+            <Input
+              type="text"
+              placeholder="RECIPIENT EMPIRE ID"
+              value={recipient}
+              onChange={(e) => setRecipient(e.target.value)}
+              className="cogitator-input"
+            />
+            <Input
+              type="number"
+              placeholder="AMOUNT"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              className="cogitator-input"
+            />
+            <Button 
+              onClick={handleSend} 
+              className="execute-button" 
+              disabled={isLoading}
+            >
+              {isLoading ? 'PROCESSING...' : 'EXECUTE TRANSFER'}
+            </Button>
+          </div>
+        </div>
+        <div className="wallet-transactions">
+          <h3 className="section-title">TRANSACTION LOG</h3>
+          <ScrollArea className="h-[calc(100vh-400px)]">
+            {transactions.length === 0 ? (
+              <div className="no-transactions">NO TRANSACTIONS FOUND</div>
+            ) : (
+              transactions.map((transaction, index) => (
+                <div key={index} className="transaction-item">
+                  <span className="transaction-type">
+                    {transaction.sender === username ? 'TO:' : 'FROM:'}
+                  </span>
+                  <span className="transaction-party">
+                    {transaction.sender === username ? transaction.recipient : transaction.sender}
+                  </span>
+                  <span className="transaction-amount">
+                    {transaction.sender === username ? '-' : '+'}
+                    {transaction.amount} CREDITS
+                  </span>
+                  <span className="transaction-date">
+                    {new Date(transaction.date).toLocaleString()}
+                  </span>
+                </div>
+              ))
+            )}
+          </ScrollArea>
+        </div>
       </div>
     </div>
   );

@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Folder, File, ChevronRight, ChevronDown } from 'lucide-react';
-import { getLibraryContent, LibraryItem } from '@/app/actions/library';
+import { Folder, File, ChevronRight, ChevronDown, Trash2 } from 'lucide-react';
+import { getLibraryContent, LibraryItem, deleteLibraryItem } from '@/app/actions/library';
+import { useToast } from "@/components/ui/use-toast"
 
 const Library: React.FC = () => {
   const [library, setLibrary] = useState<LibraryItem[]>([]);
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
   const [selectedFile, setSelectedFile] = useState<LibraryItem | null>(null);
+
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchLibraryContent = async () => {
@@ -32,22 +35,20 @@ const Library: React.FC = () => {
     });
   };
 
-  const renderTreeItem = (item: LibraryItem, depth: number = 0, isLast: boolean = true) => {
+  const renderTreeItem = (item: LibraryItem, depth: number = 0) => {
     const isFolder = item.type === 'folder';
     const isExpanded = expandedFolders.has(item.name);
+    const fullPath = [...item.path, item.name];
     const childItems = library.filter(child => 
-      child.path.length > 0 && child.path[0] === item.name
+      JSON.stringify(child.path) === JSON.stringify(fullPath)
     );
 
     return (
       <div key={item.id} className="tree-item">
         <div 
-          className={`tree-line ${isLast ? 'last' : ''}`} 
+          className="tree-line"
           style={{ marginLeft: `${depth * 20}px` }}
         >
-          <span className="tree-prefix">
-            {isLast ? '└─' : '├─'}
-          </span>
           <div 
             className="tree-content"
             onClick={() => isFolder ? toggleFolder(item.name) : setSelectedFile(item)}
@@ -64,8 +65,8 @@ const Library: React.FC = () => {
             {!isFolder && <span className="file-size">[4.0K]</span>}
           </div>
         </div>
-        {isFolder && isExpanded && childItems.map((child, index) => 
-          renderTreeItem(child, depth + 1, index === childItems.length - 1)
+        {isFolder && isExpanded && childItems.map((child) => 
+          renderTreeItem(child, depth + 1)
         )}
       </div>
     );
@@ -77,9 +78,7 @@ const Library: React.FC = () => {
     <div className="library-container">
       <h2 className="library-title">Cogitator File System</h2>
       <div className="tree-view">
-        {rootItems.map((item, index) => 
-          renderTreeItem(item, 0, index === rootItems.length - 1)
-        )}
+        {rootItems.map((item) => renderTreeItem(item))}
       </div>
       {selectedFile && (
         <div className="file-preview">
